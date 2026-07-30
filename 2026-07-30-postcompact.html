@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PostCompact — разбор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8fafc; color: #334155; line-height: 1.65;
+    padding: 48px 24px; margin: 0; font-size: 15px;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .eyebrow .badge {
+    background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;
+    border-radius: 4px; padding: 2px 7px; letter-spacing: .04em;
+  }
+  h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px; line-height: 1.2; }
+  .subtitle { font-size: 16px; color: #64748b; margin: 0; }
+
+  .stats-row {
+    display: flex; gap: 32px; flex-wrap: wrap; margin: 28px 0 32px; padding: 18px 0;
+    border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+  .stat-value.bad { color: #9b2226; }
+  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+  .at-a-glance {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;
+  }
+  .glance-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #78350f; margin-bottom: 14px;
+  }
+  .glance-row { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+  .glance-row:last-child { margin-bottom: 0; }
+  .glance-key {
+    font-size: 12px; font-weight: 600; color: #92400e; min-width: 108px;
+    flex: none; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .glance-val { color: #422006; font-size: 14px; }
+  .glance-val b { color: #78350f; }
+
+  .who-wrote {
+    display: flex; align-items: flex-start; gap: 12px; background: #fff;
+    border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 32px;
+  }
+  .who-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex: none;
+    background: #1e40af; color: #fff; display: flex; align-items: center;
+    justify-content: center; font-weight: 600; font-size: 15px;
+  }
+  .who-name { font-weight: 600; color: #0f172a; }
+  .who-handle { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; }
+  .who-bio { font-size: 13px; color: #475569; margin-top: 2px; }
+
+  .nav-toc {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; padding: 14px 16px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  }
+  .nav-toc a {
+    font-size: 12px; color: #475569; text-decoration: none; background: #f1f5f9;
+    border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px; transition: all .15s ease;
+  }
+  .nav-toc a:hover { background: #e2e8f0; color: #0f172a; }
+
+  h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin: 48px 0 16px; scroll-margin-top: 24px; }
+  p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+  .card-good { background: #f0fdf4; border-color: #86efac; }
+  .card-warn { background: #fffbeb; border-color: #fcd34d; }
+  .card-head {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .card-good .card-head { color: #166534; }
+  .card-warn .card-head { color: #92400e; }
+  .card-head .who { font-family: 'JetBrains Mono', monospace; text-transform: none; letter-spacing: 0; }
+  .card p { font-size: 14px; margin: 0; }
+  .layers { display: grid; gap: 10px; }
+  .layer-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; background: #f1f5f9;
+    border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; color: #64748b;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: .88em; background: #f1f5f9;
+    border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 5px; color: #1e40af;
+  }
+  .code-block { position: relative; margin: 14px 0; }
+  .code-block pre {
+    background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px;
+    margin: 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.55; color: #1e40af;
+  }
+  .code-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+  .copy-btn {
+    background: #e2e8f0; border: none; border-radius: 4px; padding: 5px 10px;
+    font-size: 11px; cursor: pointer; color: #475569; font-family: inherit; transition: background .15s ease;
+  }
+  .copy-btn:hover { background: #cbd5e1; }
+  .copy-btn.done { background: #bbf7d0; color: #166534; }
+
+  .sources { display: grid; gap: 8px; }
+  .sources a {
+    display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 8px; padding: 10px 14px; text-decoration: none; color: #334155;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .sources a:hover { border-color: #94a3b8; transform: translateX(2px); }
+  .sources .host { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; min-width: 140px; flex: none; }
+  .sources .what { font-size: 14px; }
+
+  footer {
+    margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+    font-size: 12px; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 6px 20px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 28px 16px; }
+    h1 { font-size: 26px; }
+    .stats-row { gap: 20px; }
+    .glance-row { flex-direction: column; gap: 2px; }
+    .glance-key { min-width: 0; }
+    .sources .host { min-width: 100%; }
+    .sources a { flex-wrap: wrap; gap: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="eyebrow">
+    <span class="badge">новый совет</span>
+    <span>Part 7 · End of Week Ships</span>
+  </div>
+
+  <h1>PostCompact: хук после сжатия контекста</h1>
+  <p class="subtitle">Крючок для журнала и внешних действий. Вернуть потерянные инструкции он не может — что бы ни обещал сайт.</p>
+
+  <div class="stats-row">
+    <div><div class="stat-value">нет</div><div class="stat-label">стоит ли тебе</div></div>
+    <div><div class="stat-value">с оговоркой</div><div class="stat-label">на Windows</div></div>
+    <div><div class="stat-value">4</div><div class="stat-label">поиска по докам</div></div>
+    <div><div class="stat-value bad">2</div><div class="stat-label">расхождения с докой</div></div>
+    <div><div class="stat-value">$0.20</div><div class="stat-label">стоил разбор</div></div>
+  </div>
+
+  <div class="at-a-glance">
+    <div class="glance-title">Коротко</div>
+    <div class="glance-row">
+      <span class="glance-key">Стоит ли</span>
+      <span class="glance-val">Соло-разработчику не нужен хук ради одного сообщения после сжатия. Главная заявленная причина — вернуть инструкции в контекст — документацией <b>не подтверждается</b>. Ставить имеет смысл, только когда уже есть внешний журнал или автоматизация, которым нужен <code>compact_summary</code>.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Windows</span>
+      <span class="glance-val">Сам хук работает, но пример на сайте оставляет выбор оболочки неявным и использует Unix-стиль <code>echo</code>. Добавь <code>"shell": "powershell"</code> и команду <code>Write-Host</code>.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Что сделать</span>
+      <span class="glance-val"><b>Не добавляй этот хук ради возврата инструкций после сжатия: он для этого не предназначен.</b></span>
+    </div>
+  </div>
+
+  <div class="who-wrote">
+    <div class="who-avatar">T</div>
+    <div>
+      <div><span class="who-name">Thariq</span> <span class="who-handle">@trq212</span></div>
+      <div class="who-bio">Claude Code @anthropicai · prev YC W20, @southpkcommons, @medialab</div>
+    </div>
+  </div>
+
+  <nav class="nav-toc">
+    <a href="#what">Что это</a>
+    <a href="#how">Как работает</a>
+    <a href="#example">Пример</a>
+    <a href="#layers">Слои достоверности</a>
+    <a href="#unconfirmed">Расхождения с документацией</a>
+    <a href="#sources">Источники</a>
+  </nav>
+
+  <h2 id="what">Что это</h2>
+  <p>PostCompact — точка, в которой Claude Code запускает твой обработчик уже после сжатия длинного диалога. Она нужна, когда важно отметить сам факт сжатия, сохранить получившуюся выжимку вне сессии или обновить внешний статус.</p>
+  <p>Раньше у хука не было отдельного события именно после этого шага: приходилось вручную замечать сжатие либо цепляться за другие события, которые происходят не в тот момент. Здесь можно привязать команду к ручному <code>/compact</code> и к автоматическому сжатию, когда окно контекста заполнилось.</p>
+  <p>Но это не способ вернуть в разговор потерянные инструкции: сжатие уже завершилось, а его результат этот хук не меняет.</p>
+
+  <h2 id="how">Как работает</h2>
+  <p>Claude Code сжимает разговор либо после ручной команды <code>/compact</code>, либо автоматически, когда контекстное окно заполнено. Как только операция закончилась, срабатывает <code>PostCompact</code>. Пустой <code>matcher</code>, как в совете на сайте, означает запуск и для ручного, и для автоматического сжатия; можно отдельно отфильтровать <code>manual</code> или <code>auto</code>.</p>
+  <p>Обработчик получает JSON через стандартный ввод, включая причину сжатия в <code>trigger</code> и готовую выжимку диалога в <code>compact_summary</code>. Дальше он может выполнить побочный эффект: например, записать факт сжатия или передать данные во внешний сервис. На результат сжатия он не влияет и не умеет блокировать его.</p>
+  <p>Если нужно остановить сжатие до его выполнения, для этого есть соседний <code>PreCompact</code>; если надо добавить Claude контекст после работы с инструментом, это другой сценарий с <code>PostToolUse</code>, а не <code>PostCompact</code>.</p>
+
+  <h2 id="example">Пример</h2>
+  <p>В <code>.claude/settings.json</code> можно поставить обработчик для проверки самого события на Windows:</p>
+  <div class="code-block">
+    <button class="copy-btn" data-copy='{"hooks":{"PostCompact":[{"matcher":"","hooks":[{"type":"command","shell":"powershell","command":"Write-Host &apos;Context was compacted&apos;"}]}]}}'>копировать</button>
+    <pre>{
+  "hooks": {
+    "PostCompact": [{
+      "matcher": "",
+      "hooks": [{
+        "type": "command",
+        "shell": "powershell",
+        "command": "Write-Host 'Context was compacted'"
+      }]
+    }]
+  }
+}</pre>
+  </div>
+  <p>После этого выполни <code>/compact</code> в сессии. Команда PowerShell запустится уже после сжатия, но её текст не станет инструкцией для Claude и не изменит выжимку разговора.</p>
+
+  <h2 id="layers">Слои достоверности</h2>
+  <div class="layers">
+    <div class="card">
+      <div class="card-head"><span class="layer-num">01</span> <span class="who">Thariq (@trq212)</span> · в оригинале</div>
+      <p>В профиле пишет, что связан с Claude Code в Anthropic. В загруженном посте он коротко перечисляет <code>PostCompact</code> среди других новинок: «there's a postcompact hook». Ни настройки, ни механики, ни идеи про повторную вставку инструкций он там не объясняет.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">02</span> <span class="who">@CarolinaCherry</span> · дописал на сайте</div>
+      <p>Добавил расшифровку механики, JSON-конфиг с <code>echo</code> и варианты применения. Утверждение, что через этот хук можно вернуть критические инструкции после сжатия, — его добавление: в посте Thariq этого нет.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">03</span> <span class="who">code.claude.com</span> · документация</div>
+      <p>Подтверждает <code>PostCompact</code>: он срабатывает после ручного <code>/compact</code> или автоматического сжатия и получает <code>trigger</code> с <code>compact_summary</code>. Описан как событие для последующих действий вроде логирования выжимки или обновления внешнего состояния. Управления решением у него нет: он не меняет и не отменяет уже выполненное сжатие.</p>
+    </div>
+    <div class="card card-good">
+      <div class="card-head"><span class="layer-num">04</span> вывод наблюдателя</div>
+      <p>Как крючок для журнала, уведомления или внешней аналитики — нормальная заготовка. Как страховка от потери правил в длинной сессии — мимо: сайт продаёт именно этот сценарий слишком смело. Без готового внешнего действия ты получишь лишний конфиг и сообщение о том, что контекст уже сжали.</p>
+    </div>
+  </div>
+
+  <h2 id="unconfirmed">Расхождения с документацией</h2>
+  <div class="card card-warn">
+    <div class="card-head">сайт обещает то, чего документация не подтверждает</div>
+    <p>Утверждение сайта, что <code>PostCompact</code> может повторно внедрить в контекст Claude критические инструкции, потерянные при сжатии. Официальная документация это не подтверждает и указывает, что хук не управляет результатом compact-операции.</p>
+  </div>
+  <div class="card card-warn">
+    <div class="card-head">формулировка не сходится с механикой</div>
+    <p>Фраза сайта о том, что после <code>PostCompact</code> «контекст сбрасывается». Документация описывает сжатие и готовую выжимку <code>compact_summary</code>, а не сброс контекста.</p>
+  </div>
+
+  <h2 id="sources">Источники</h2>
+  <div class="sources">
+    <a href="https://x.com/trq212/status/2032632602629386348"><span class="host">x.com</span><span class="what">пост Thariq — первоисточник совета</span></a>
+    <a href="https://code.claude.com/docs/en/hooks"><span class="host">code.claude.com</span><span class="what">hooks — события, вход и ограничения</span></a>
+  </div>
+
+  <footer>
+    <span>наблюдатель за howborisusesclaudecode.com</span>
+    <span>30 июля 2026, 22:26</span>
+    <span>4 поиска · 50 130 вход · 4 886 выход · $0.1986</span>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const src = btn.dataset.copy || btn.parentElement.querySelector('pre').textContent;
+      await navigator.clipboard.writeText(src);
+      const was = btn.textContent;
+      btn.textContent = 'скопировано'; btn.classList.add('done');
+      setTimeout(() => { btn.textContent = was; btn.classList.remove('done'); }, 1400);
+    });
+  });
+</script>
+</body>
+</html>
