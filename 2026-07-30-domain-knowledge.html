@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Знания о проекте в CLAUDE.md, skills и правилах ревью">
+<meta property="og:description" content="Стоит ли: смотря по обстоятельствам · Windows: работает · Найдено 4 расхождения сайта с первоисточником и документацией. Part 21, совет 3.">
+<meta property="og:site_name" content="Наблюдатель за howborisusesclaudecode.com">
+<meta name="theme-color" content="#f8fafc">
+<title>Знания о проекте в CLAUDE.md, skills и правилах ревью — разбор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #f8fafc; color: #334155; line-height: 1.65;
+    padding: 48px 24px; margin: 0; font-size: 15px;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  }
+  .eyebrow .badge {
+    background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;
+    border-radius: 4px; padding: 2px 7px; letter-spacing: .04em;
+  }
+  h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px; line-height: 1.2; }
+  .subtitle { font-size: 16px; color: #64748b; margin: 0; }
+
+  .stats-row {
+    display: flex; gap: 32px; flex-wrap: wrap; margin: 28px 0 32px; padding: 18px 0;
+    border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+  .stat-value.bad { color: #9b2226; }
+  .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+  .at-a-glance {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;
+  }
+  .glance-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: #78350f; margin-bottom: 14px;
+  }
+  .glance-row { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+  .glance-row:last-child { margin-bottom: 0; }
+  .glance-key {
+    font-size: 12px; font-weight: 600; color: #92400e; min-width: 108px;
+    flex: none; text-transform: uppercase; letter-spacing: .04em;
+  }
+  .glance-val { color: #422006; font-size: 14px; }
+  .glance-val b { color: #78350f; }
+
+  .who-wrote {
+    display: flex; align-items: flex-start; gap: 12px; background: #fff;
+    border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 32px;
+  }
+  .who-avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex: none; background: #1e40af;
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 15px;
+  }
+  .who-name { font-weight: 600; color: #0f172a; }
+  .who-handle { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; }
+  .who-bio { font-size: 13px; color: #475569; margin-top: 2px; }
+
+  .nav-toc {
+    display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; padding: 14px 16px;
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  }
+  .nav-toc a {
+    font-size: 12px; color: #475569; text-decoration: none; background: #f1f5f9;
+    border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px; transition: all .15s ease;
+  }
+  .nav-toc a:hover { background: #e2e8f0; color: #0f172a; }
+
+  h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin: 48px 0 16px; scroll-margin-top: 24px; }
+  p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+  .card-good { background: #f0fdf4; border-color: #86efac; }
+  .card-warn { background: #fffbeb; border-color: #fcd34d; }
+  .card-head {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .card-good .card-head { color: #166534; }
+  .card-warn .card-head { color: #92400e; }
+  .card-head .who { font-family: 'JetBrains Mono', monospace; text-transform: none; letter-spacing: 0; }
+  .card p { font-size: 14px; margin: 0; }
+  .layers { display: grid; gap: 10px; }
+  .layer-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; background: #f1f5f9;
+    border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; color: #64748b;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: .88em; background: #f1f5f9;
+    border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 5px; color: #1e40af;
+  }
+  .code-block { position: relative; margin: 14px 0; }
+  .code-block pre {
+    background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px;
+    margin: 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; line-height: 1.55; color: #1e40af;
+  }
+  .code-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+  .copy-btn {
+    background: #e2e8f0; border: none; border-radius: 4px; padding: 5px 10px;
+    font-size: 11px; cursor: pointer; color: #475569; font-family: inherit; transition: background .15s ease;
+  }
+  .copy-btn:hover { background: #cbd5e1; }
+  .copy-btn.done { background: #bbf7d0; color: #166534; }
+
+  .sources { display: grid; gap: 8px; }
+  .sources a {
+    display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 8px; padding: 10px 14px; text-decoration: none; color: #334155;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  .sources a:hover { border-color: #94a3b8; transform: translateX(2px); }
+  .sources .host { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; min-width: 140px; flex: none; }
+  .sources .what { font-size: 14px; }
+
+  footer {
+    margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+    font-size: 12px; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 6px 20px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 28px 16px; }
+    h1 { font-size: 26px; }
+    .stats-row { gap: 20px; }
+    .glance-row { flex-direction: column; gap: 2px; }
+    .glance-key { min-width: 0; }
+    .sources .host { min-width: 100%; }
+    .sources a { flex-wrap: wrap; gap: 2px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="eyebrow">
+    <span class="badge">совет 3</span>
+    <span>Part 21 · Automation Is the Meta-Skill</span>
+  </div>
+
+  <h1>Знания о проекте в CLAUDE.md, skills и правилах ревью</h1>
+  <p class="subtitle">Идея годная, но сайт раздувает её до лозунга — и приписывает Борису слова, которых в его посте нет.</p>
+
+  <div class="stats-row">
+    <div><div class="stat-value">смотря по</div><div class="stat-label">стоит ли тебе</div></div>
+    <div><div class="stat-value">работает</div><div class="stat-label">на Windows</div></div>
+    <div><div class="stat-value">3</div><div class="stat-label">поиска по докам</div></div>
+    <div><div class="stat-value bad">4</div><div class="stat-label">расхождения</div></div>
+    <div><div class="stat-value">$0.18</div><div class="stat-label">стоил разбор</div></div>
+  </div>
+
+  <div class="at-a-glance">
+    <div class="glance-title">Коротко</div>
+    <div class="glance-row">
+      <span class="glance-key">Стоит ли</span>
+      <span class="glance-val">Брать, когда Claude уже дважды наступил на одно правило или ты дважды написал одинаковое пояснение. Часть про онбординг команды и дизайнеров соло-разработчику не нужна; выгода — меньше повторных промптов. <b>Заводить толстый CLAUDE.md заранее — мимо.</b></span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Windows</span>
+      <span class="glance-val">Работает без переделки. Личные правила для всех проектов лежат в <code>%USERPROFILE%\.claude\CLAUDE.md</code>, а не в Unix-варианте с <code>~/.claude</code>. <code>REVIEW.md</code> исполняется в облачном Code Review, ОС на него не влияет.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Что сделать</span>
+      <span class="glance-val"><b>После следующей второй одинаковой правки добавь в проектный <code>CLAUDE.md</code> одно короткое правило с условием и проверяемым действием.</b></span>
+    </div>
+  </div>
+
+  <div class="who-wrote">
+    <div class="who-avatar">B</div>
+    <div>
+      <div><span class="who-name">Boris Cherny</span> <span class="who-handle">@bcherny</span></div>
+      <div class="who-bio">Claude Code @anthropicai</div>
+    </div>
+  </div>
+
+  <nav class="nav-toc">
+    <a href="#what">Что это</a>
+    <a href="#how">Как работает</a>
+    <a href="#example">Пример</a>
+    <a href="#layers">Слои достоверности</a>
+    <a href="#unconfirmed">Расхождения</a>
+    <a href="#sources">Источники</a>
+  </nav>
+
+  <h2 id="what">Что это</h2>
+  <p>Сайт советует перестать держать правила проекта в голове, в старых чатах и в замечаниях на ревью. Вместо очередного ручного объяснения Claude надо записать повторяющееся знание туда, откуда он сможет взять его в следующей сессии: в <code>CLAUDE.md</code>, skill или, для автоматического ревью, в <code>REVIEW.md</code>.</p>
+  <p>Раньше один и тот же контекст приходилось снова писать в промпте, а архитектурные правила часто всплывали лишь после замечания ревьюера. Смысл тут не в магии «нулевого контекста», а в том, чтобы повторная правка превращалась в короткое общее правило. Это совет по организации работы, а не отдельная возможность Claude Code.</p>
+
+  <h2 id="how">Как работает</h2>
+  <p><code>CLAUDE.md</code> хранит постоянные правила проекта и загружается в каждую сессию: туда идут соглашения, команды проверки, устройство проекта и запреты, которые нужны почти всегда. Skills нужны для объёмных справок и повторяемых процедур, которые не стоит тащить в контекст на каждом запросе: Claude подгружает их по вызову или когда считает уместными.</p>
+  <p><code>REVIEW.md</code> относится к облачному Code Review — он меняет, что именно автоматический ревьюер ищет в pull request, но не управляет обычной локальной сессией. Автопамять — отдельный слой: Claude может сохранять туда заметки, но они локальны для машины и не заменяют файл в git.</p>
+  <p>Линтеры, тесты и хуки ловят чётко проверяемые нарушения; <code>CLAUDE.md</code> и skills лишь дают модели контекст, поэтому не гарантируют соблюдение правила. Если действие должно происходить без исключений, его надо обеспечивать хуком или настройкой разрешений, а не текстовой инструкцией. Для соло-разработки граница простая: <b>записывай только то, что уже пришлось объяснить или исправить второй раз.</b></p>
+
+  <h2 id="example">Пример</h2>
+  <p>В корне проекта запусти <code>/init</code>: Claude Code создаст стартовый <code>CLAUDE.md</code> или предложит улучшения, если файл уже есть. Добавь туда короткое проверяемое правило:</p>
+  <div class="code-block">
+    <button class="copy-btn">копировать</button>
+    <pre>## Проверка изменений
+- Перед коммитом запусти тесты.</pre>
+  </div>
+  <p>Не превращай файл в свалку истории решений: длинную процедуру или большую справку вынеси в skill.</p>
+
+  <h2 id="layers">Слои достоверности</h2>
+  <div class="layers">
+    <div class="card">
+      <div class="card-head"><span class="layer-num">01</span> <span class="who">Boris Cherny (@bcherny)</span> · в оригинале</div>
+      <p>В описании профиля указано «Claude Code @anthropicai». В загруженном посте он пишет, что сильные инженеры давно автоматизировали повторяющуюся работу: через макросы, линтеры и e2e-тесты. Текст поста обрывается на полуслове, и в доступном фрагменте нет ни <code>CLAUDE.md</code>, ни skills, ни тезиса о кодировании почти всего доменного знания.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">02</span> <span class="who">@CarolinaCherry</span> · дописал на сайте</div>
+      <p>Разворачивает короткую мысль про автоматизацию в широкий совет: вынести знания из голов людей в <code>CLAUDE.md</code>, <code>REVIEW.md</code>, skills, документацию и память Claude. Он также приписывает Борису развёрнутую цитату про отклонённый pull request для незнакомого iOS-кода — <b>в загруженном тексте первоисточника этой цитаты нет</b>. Заявления о том, что не-инженеры смогут работать так же эффективно, как инженеры, тоже добавлены на сайте.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">03</span> <span class="who">code.claude.com</span> · документация</div>
+      <p>Подтверждает основную механику: <code>CLAUDE.md</code> загружается в начале сессии и годится для постоянных правил, skills хранят справки и процедуры, подгружаемые по необходимости. Отдельно подтверждает <code>REVIEW.md</code> для облачного Code Review. И прямо предупреждает: <code>CLAUDE.md</code> задаёт контекст, но не обеспечивает строгое исполнение. Автопамять хранится локально и не заменяет документацию в репозитории.</p>
+    </div>
+    <div class="card card-good">
+      <div class="card-head"><span class="layer-num">04</span> вывод наблюдателя</div>
+      <p>Сама идея годная, но сайт раздувает её до лозунга. Тебе не надо заранее описывать весь мир проекта для воображаемой команды: после второй одинаковой коррекции добавляй одно короткое правило с понятной проверкой. Для Python, FastAPI и PostgreSQL это уместно для повторяющихся правил тестов, миграций и границ API — но только если они уже реально повторяются.</p>
+    </div>
+  </div>
+
+  <h2 id="unconfirmed">Расхождения с первоисточником и документацией</h2>
+  <div class="card card-warn">
+    <div class="card-head">цитата, которой нет в посте</div>
+    <p>Приписанная Борису Черни цитата про отклонённый pull request для незнакомого iOS-кода: её нет в загруженном фрагменте первоисточника.</p>
+  </div>
+  <div class="card card-warn">
+    <div class="card-head">обещание, не подтверждённое документацией</div>
+    <p>Что в <code>CLAUDE.md</code>, skills, <code>REVIEW.md</code>, документации и памяти Claude можно закодировать почти всё доменное знание проекта.</p>
+  </div>
+  <div class="card card-warn">
+    <div class="card-head">обещание, не подтверждённое документацией</div>
+    <p>Что агент или новый человек сможет продуктивно работать с нулевым дополнительным контекстом от автора запроса.</p>
+  </div>
+  <div class="card card-warn">
+    <div class="card-head">обещание, не подтверждённое документацией</div>
+    <p>Что не-инженеры смогут вносить вклад столь же эффективно, как инженеры.</p>
+  </div>
+
+  <h2 id="sources">Источники</h2>
+  <div class="sources">
+    <a href="https://x.com/bcherny/status/2077460395279692197"><span class="host">x.com</span><span class="what">пост Boris Cherny — первоисточник совета</span></a>
+    <a href="https://code.claude.com/docs/en/memory"><span class="host">code.claude.com</span><span class="what">memory — CLAUDE.md и автопамять</span></a>
+    <a href="https://code.claude.com/docs/en/features-overview"><span class="host">code.claude.com</span><span class="what">features overview</span></a>
+    <a href="https://code.claude.com/docs/en/code-review"><span class="host">code.claude.com</span><span class="what">code review — REVIEW.md</span></a>
+  </div>
+
+  <footer>
+    <span>наблюдатель за howborisusesclaudecode.com</span>
+    <span>30 июля 2026, 22:56</span>
+    <span>3 поиска · 43 739 вход · 4 649 выход · $0.1791</span>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.parentElement.querySelector('pre').textContent);
+      const was = btn.textContent;
+      btn.textContent = 'скопировано'; btn.classList.add('done');
+      setTimeout(() => { btn.textContent = was; btn.classList.remove('done'); }, 1400);
+    });
+  });
+</script>
+</body>
+</html>
