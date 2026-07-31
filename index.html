@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="Разборы howborisusesclaudecode.com">
-<meta property="og:description" content="Архив разборов: 3 разбора.">
+<meta property="og:description" content="Архив разборов: 4 разбора.">
 <meta name="theme-color" content="#f8fafc">
 <title>Разборы howborisusesclaudecode.com</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,7 +51,13 @@ h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px; line-he
   border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
 }
 .stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+/* Тон стоит там, где решение. Красный — только «у тебя не заработает» и
+ * «сайт расходится с документацией»; «не стоит» гасится, потому что это
+ * не поломка, а сэкономленное время. */
+.stat-value.good { color: #166534; }
+.stat-value.warn { color: #92400e; }
 .stat-value.bad { color: #9b2226; }
+.stat-value.muted { color: #94a3b8; }
 .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
 
 .at-a-glance {
@@ -146,6 +152,10 @@ footer {
   margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0;
   font-size: 12px; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 6px 20px;
 }
+/* Единственная ссылка в футере ведёт в архив: со страницы разбора должно
+ * быть куда пойти дальше, иначе она тупик. */
+footer a { color: #64748b; text-decoration: none; border-bottom: 1px solid #cbd5e1; }
+footer a:hover { color: #0f172a; border-bottom-color: #94a3b8; }
 
 /* --- дописано: секции, которых в ручных страницах не было --- */
 
@@ -199,6 +209,19 @@ ul.plain li:last-child { margin-bottom: 0; }
 }
 .report-title { font-weight: 600; color: #0f172a; margin-bottom: 4px; }
 .report-summary { font-size: 13px; color: #475569; }
+
+/* --- страница расхождений --- */
+
+/* Карточка здесь не ссылка целиком, как в архиве: внутри список
+ * утверждений, и оборачивать список в <a> нельзя. Ссылкой остаётся
+ * заголовок — до самого разбора одно нажатие. */
+.divergence {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;
+  border-left: 3px solid #fca5a5;
+}
+.divergence .report-title a { color: #0f172a; text-decoration: none; }
+.divergence .report-title a:hover { border-bottom: 1px solid #94a3b8; }
+.divergence ul.plain { margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -208,7 +231,13 @@ ul.plain li:last-child { margin-bottom: 0; }
   <h1>Разборы howborisusesclaudecode.com</h1>
   <p class="subtitle">Что появилось на сайте, что это значит и стоит ли оно времени.</p>
 
+  <div class="nav-toc"><a href="divergences.html">сайт против документации · 2 расхождения</a></div>
   <div class="report-list">
+    <a href="part11-767f2740-2544d0b4dc04aa6d.html">
+      <div class="report-meta">2026-07-31 · Part 11 · новый совет</div>
+      <div class="report-title">Команда для сокращения повторных запросов разрешений</div>
+      <div class="report-summary">Стоит ли: смотря по чему · Windows: неизвестно · расхождений с документацией: 2</div>
+    </a>
     <a href="2026-07-30-part22-be1681fe.html">
       <div class="report-meta">2026-07-30 · Part 22 · новый совет</div>
       <div class="report-title">Связка Opus 5, защиты от инъекций и Auto Mode</div>
@@ -228,10 +257,10 @@ ul.plain li:last-child { margin-bottom: 0; }
 
   <footer>
     <span>наблюдатель за howborisusesclaudecode.com</span>
-    <span>3 разбора</span>
+    <span>4 разбора</span>
   </footer>
 
 </div>
-<script type="application/json" id="reports">[{"name": "2026-07-30-part22-be1681fe.html", "title": "Связка Opus 5, защиты от инъекций и Auto Mode", "summary": "Стоит ли: нет · Windows: работает · расхождений с документацией: 3", "date": "2026-07-30", "part": 22, "kind": "новый совет"}, {"name": "2026-07-30-domain-knowledge.html", "title": "Знания о проекте в CLAUDE.md, skills и правилах ревью", "summary": "Стоит ли: смотря по обстоятельствам · Windows: работает · Найдено 4 расхождения сайта с первоисточником и документацией", "date": "2026-07-30", "part": 21, "kind": "совет 3"}, {"name": "2026-07-30-postcompact.html", "title": "PostCompact: хук после сжатия контекста", "summary": "Стоит ли: нет · Windows: с оговоркой · Найдено 2 расхождения сайта с документацией", "date": "2026-07-30", "part": 7, "kind": "новый совет"}]</script>
+<script type="application/json" id="reports">[{"name": "part11-767f2740-2544d0b4dc04aa6d.html", "title": "Команда для сокращения повторных запросов разрешений", "summary": "Стоит ли: смотря по чему · Windows: неизвестно · расхождений с документацией: 2", "date": "2026-07-31", "part": 11, "kind": "новый совет", "unconfirmed": ["Фраза автора сайта, что навык особенно полезен без auto mode: документация описывает auto mode отдельно, но не сравнивает его пользу с `/fewer-permission-prompts`.", "Поддержка PowerShell-вызовов в истории Windows-сессий: официальная страница команды называет только Bash и MCP."]}, {"name": "2026-07-30-part22-be1681fe.html", "title": "Связка Opus 5, защиты от инъекций и Auto Mode", "summary": "Стоит ли: нет · Windows: работает · расхождений с документацией: 3", "date": "2026-07-30", "part": 22, "kind": "новый совет"}, {"name": "2026-07-30-domain-knowledge.html", "title": "Знания о проекте в CLAUDE.md, skills и правилах ревью", "summary": "Стоит ли: смотря по обстоятельствам · Windows: работает · Найдено 4 расхождения сайта с первоисточником и документацией", "date": "2026-07-30", "part": 21, "kind": "совет 3"}, {"name": "2026-07-30-postcompact.html", "title": "PostCompact: хук после сжатия контекста", "summary": "Стоит ли: нет · Windows: с оговоркой · Найдено 2 расхождения сайта с документацией", "date": "2026-07-30", "part": 7, "kind": "новый совет"}]</script>
 </body>
 </html>
