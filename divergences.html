@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="Где сайт расходится с документацией">
-<meta property="og:description" content="2 расхождения с официальной документацией в 1 разбор.">
+<meta property="og:description" content="6 расхождений с официальной документацией в 2 разбора.">
 <meta name="theme-color" content="#f8fafc">
 <title>Где сайт расходится с документацией</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -233,6 +233,16 @@ ul.plain li:last-child { margin-bottom: 0; }
 
   <div class="report-list">
     <div class="divergence">
+      <div class="report-meta">2026-07-31 · Part 16 · новый совет</div>
+      <div class="report-title"><a href="part16-e2ce4773-808077db68de0fab.html">Навык в отдельном контексте: в совете перепутан ключ</a></div>
+      <ul class="plain">
+        <li>Что ключ `fork: true` в frontmatter `SKILL.md` запускает навык в отдельном контексте: официальная документация описывает для этого `context: fork`.</li>
+        <li>Что после запуска навыка в отдельном контексте его нужно дробить на агентов для изоляции каждого шага: такой точный рецепт не найден в официальной документации.</li>
+        <li>Что добавление этой настройки к встроенному `/code-review` улучшает производительность: официальная документация такого эффекта не обещает.</li>
+        <li>Что описанная схема — именно предварительный эксперимент, а не задокументированная возможность: найденные docs документируют `context: fork`, но не подтверждают статус этой конкретной формулировки с сайта.</li>
+      </ul>
+    </div>
+    <div class="divergence">
       <div class="report-meta">2026-07-31 · Part 11 · новый совет</div>
       <div class="report-title"><a href="part11-767f2740-2544d0b4dc04aa6d.html">Команда для сокращения повторных запросов разрешений</a></div>
       <ul class="plain">
@@ -244,7 +254,7 @@ ul.plain li:last-child { margin-bottom: 0; }
 
   <footer>
     <span><a href="index.html">все разборы</a></span>
-    <span>2 расхождения с официальной документацией в 1 разбор.</span>
+    <span>6 расхождений с официальной документацией в 2 разбора.</span>
   </footer>
 
 </div>
