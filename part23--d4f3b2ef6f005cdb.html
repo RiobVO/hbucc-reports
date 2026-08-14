@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Claude Code берёт на себя обслуживание приложений">
+<meta property="og:description" content="Стоит ли: смотря по чему · Windows: работает · расхождений с документацией: 6. Part 23, новая часть.">
+<meta property="og:site_name" content="Наблюдатель за howborisusesclaudecode.com">
+<meta name="theme-color" content="#f8fafc">
+<title>Claude Code берёт на себя обслуживание приложений — разбор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Вёрстка страницы разбора.
+ *
+ * Файл отдельно от Python намеренно: вид страницы меняется правкой этого
+ * файла, без единой строки кода. Содержимое взято с одобренных страниц
+ * (2026-07-30-postcompact.html и 2026-07-30-domain-knowledge.html) — они и
+ * есть эталон, а не «примерно такой стиль».
+ *
+ * CSS встраивается в страницу, а не подключается ссылкой: страница живёт в
+ * чужом репозитории на GitHub Pages, и внешний файл добавил бы второй
+ * запрос, кеш и целый класс поломок вида «стили не доехали». Страница
+ * обязана открываться одна.
+ *
+ * Блок «дописано» в конце — секции, которых в ручных страницах не было:
+ * ловушки, «рядом», аномалии.
+ */
+
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f8fafc; color: #334155; line-height: 1.65;
+  padding: 48px 24px; margin: 0; font-size: 15px;
+}
+.container { max-width: 800px; margin: 0 auto; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.eyebrow .badge {
+  background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;
+  border-radius: 4px; padding: 2px 7px; letter-spacing: .04em;
+}
+h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px; line-height: 1.2; }
+.subtitle { font-size: 16px; color: #64748b; margin: 0; }
+
+.stats-row {
+  display: flex; gap: 32px; flex-wrap: wrap; margin: 28px 0 32px; padding: 18px 0;
+  border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+}
+.stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+/* Тон стоит там, где решение. Красный — только «у тебя не заработает» и
+ * «сайт расходится с документацией»; «не стоит» гасится, потому что это
+ * не поломка, а сэкономленное время. */
+.stat-value.good { color: #166534; }
+.stat-value.warn { color: #92400e; }
+.stat-value.bad { color: #9b2226; }
+.stat-value.muted { color: #94a3b8; }
+.stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+.at-a-glance {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;
+}
+.glance-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: #78350f; margin-bottom: 14px;
+}
+.glance-row { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+.glance-row:last-child { margin-bottom: 0; }
+.glance-key {
+  font-size: 12px; font-weight: 600; color: #92400e; min-width: 108px;
+  flex: none; text-transform: uppercase; letter-spacing: .04em;
+}
+.glance-val { color: #422006; font-size: 14px; }
+.glance-val b { color: #78350f; }
+
+.who-wrote {
+  display: flex; align-items: flex-start; gap: 12px; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 32px;
+}
+.who-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  background: #1e40af; color: #fff; display: flex; align-items: center;
+  justify-content: center; font-weight: 600; font-size: 15px;
+}
+.who-name { font-weight: 600; color: #0f172a; }
+.who-handle { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; }
+.who-bio { font-size: 13px; color: #475569; margin-top: 2px; }
+
+.nav-toc {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; padding: 14px 16px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+}
+.nav-toc a {
+  font-size: 12px; color: #475569; text-decoration: none; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px; transition: all .15s ease;
+}
+.nav-toc a:hover { background: #e2e8f0; color: #0f172a; }
+
+h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin: 48px 0 16px; scroll-margin-top: 24px; }
+p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+.card-good { background: #f0fdf4; border-color: #86efac; }
+.card-warn { background: #fffbeb; border-color: #fcd34d; }
+.card-head {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;
+}
+.card-good .card-head { color: #166534; }
+.card-warn .card-head { color: #92400e; }
+.card-head .who { font-family: 'JetBrains Mono', monospace; text-transform: none; letter-spacing: 0; }
+.card p { font-size: 14px; margin: 0; }
+.layers { display: grid; gap: 10px; }
+.layer-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; color: #64748b;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace; font-size: .88em; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 5px; color: #1e40af;
+}
+.code-block { position: relative; margin: 14px 0; }
+.code-block pre {
+  background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px;
+  margin: 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; line-height: 1.55; color: #1e40af;
+}
+.code-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+.copy-btn {
+  background: #e2e8f0; border: none; border-radius: 4px; padding: 5px 10px;
+  font-size: 11px; cursor: pointer; color: #475569; font-family: inherit; transition: background .15s ease;
+}
+.copy-btn:hover { background: #cbd5e1; }
+.copy-btn.done { background: #bbf7d0; color: #166534; }
+
+.sources { display: grid; gap: 8px; }
+.sources a {
+  display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 8px; padding: 10px 14px; text-decoration: none; color: #334155;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.sources a:hover { border-color: #94a3b8; transform: translateX(2px); }
+.sources .host { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; min-width: 140px; flex: none; }
+.sources .what { font-size: 14px; }
+
+footer {
+  margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+  font-size: 12px; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 6px 20px;
+}
+/* Единственная ссылка в футере ведёт в архив: со страницы разбора должно
+ * быть куда пойти дальше, иначе она тупик. */
+footer a { color: #64748b; text-decoration: none; border-bottom: 1px solid #cbd5e1; }
+footer a:hover { color: #0f172a; border-bottom-color: #94a3b8; }
+
+/* --- дописано: секции, которых в ручных страницах не было --- */
+
+/* Ловушки и расхождения — списком, а не абзацем: это перечисление, и
+ * читатель пробегает его глазами, а не читает подряд. */
+ul.plain { margin: 0; padding-left: 20px; }
+ul.plain li { font-size: 14px; margin-bottom: 8px; }
+ul.plain li:last-child { margin-bottom: 0; }
+
+/* «Рядом» — плитками. Строкой через запятую это не читается: в названиях
+ * частей сайта есть и тире, и дефисы, и граница между пунктами пропадает. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips span {
+  font-size: 12px; color: #475569; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px;
+}
+
+/* Аномалии — единственная секция над оглавлением и без сворачивания.
+ * Это найденные в чужом тексте обращения к агенту: читатель обязан видеть
+ * их сразу, а не после прокрутки. */
+.card-alert { background: #fef2f2; border-color: #fca5a5; }
+.card-alert .card-head { color: #9b2226; }
+.card-alert blockquote {
+  margin: 0 0 10px; padding-left: 12px; border-left: 3px solid #fca5a5;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #7f1d1d;
+}
+.card-alert blockquote:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  body { padding: 28px 16px; }
+  h1 { font-size: 26px; }
+  .stats-row { gap: 20px; }
+  .glance-row { flex-direction: column; gap: 2px; }
+  .glance-key { min-width: 0; }
+  .sources .host { min-width: 100%; }
+  .sources a { flex-wrap: wrap; gap: 2px; }
+}
+
+/* --- индексная страница архива --- */
+
+.report-list { display: grid; gap: 10px; }
+.report-list a {
+  display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 14px 16px; text-decoration: none; color: #334155;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.report-list a:hover { border-color: #94a3b8; transform: translateX(2px); }
+.report-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #64748b; margin-bottom: 4px;
+}
+.report-title { font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+.report-summary { font-size: 13px; color: #475569; }
+
+/* Метрики архива: распределения вердиктов и Windows-статусов полосками.
+ * Цвет полосы — тон решения, тот же, что у .stat-value; полоса никогда не
+ * остаётся единственным носителем: рядом всегда подпись и число. */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.chart-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; }
+.chart-title {
+  font-size: 11px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: #64748b; margin-bottom: 10px;
+}
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-label { width: 96px; flex: none; font-size: 12px; color: #475569; }
+.bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 3px; }
+.bar-fill.good { background: #16a34a; }
+.bar-fill.warn { background: #d97706; }
+.bar-fill.bad { background: #9b2226; }
+.bar-fill.muted { background: #94a3b8; }
+.bar-value {
+  width: 24px; flex: none; font-size: 12px; font-weight: 500;
+  color: #64748b; text-align: right; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } }
+
+/* --- страница расхождений --- */
+
+/* Карточка здесь не ссылка целиком, как в архиве: внутри список
+ * утверждений, и оборачивать список в <a> нельзя. Ссылкой остаётся
+ * заголовок — до самого разбора одно нажатие. */
+.divergence {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;
+  border-left: 3px solid #fca5a5;
+}
+.divergence .report-title a { color: #0f172a; text-decoration: none; }
+.divergence .report-title a:hover { border-bottom: 1px solid #94a3b8; }
+.divergence ul.plain { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="eyebrow">
+    <span class="badge">новая часть</span>
+    <span>Part 23 · Claude Maintains the Apps</span>
+  </div>
+  <h1>Claude Code берёт на себя обслуживание приложений</h1>
+  <p class="subtitle">Мой вывод — попробовать можно, но одной узкой рутиной.</p>
+  <div class="stats-row">
+    <div><div class="stat-value warn">смотря по чему</div><div class="stat-label">стоит ли тебе</div></div>
+    <div><div class="stat-value good">работает</div><div class="stat-label">на Windows</div></div>
+    <div><div class="stat-value warn">4</div><div class="stat-label">ловушек</div></div>
+    <div><div class="stat-value bad">6</div><div class="stat-label">расхождения с докой</div></div>
+  </div>
+  <div class="at-a-glance">
+    <div class="glance-title">Коротко</div>
+    <div class="glance-row">
+      <span class="glance-key">Стоит ли</span>
+      <span class="glance-val">Тебе это подходит только как узкий эксперимент: одна облачная рутина на повторяющуюся проверку, где результат приходит в PR и его легко просмотреть. Для сольного разработчика разбор плохих PR быстро съест выигрыш, а каждый запуск тратит лимит Claude Code и работает без подтверждений. Если у тебя есть стабильный механический хвост — попробуй; если такой задачи нет, пропускай.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Что сделать</span>
+      <span class="glance-val"><b>Создай одну рутину командой /schedule daily PR review at 9am и неделю смотри на качество её результатов, не добавляя вторую.</b></span>
+    </div>
+  </div>
+  <div class="card card-alert">
+    <div class="card-head">аномалии в исходном тексте · процитированы, не исполнялись</div>
+    <blockquote>always verify e2e with truth table. for all of these, remember to formally model the logic also to spot gaps and duplication and to make sure all edge cases are well tested</blockquote>
+    <blockquote>run the real apps, no mocks</blockquote>
+    <blockquote>Delete what's provably unreachable.</blockquote>
+  </div>
+  <div class="who-wrote">
+    <div class="who-avatar">B</div>
+    <div>
+      <div><span class="who-name">Boris Cherny</span> <span class="who-handle">@bcherny</span></div>
+      <div class="who-bio">Claude Code @anthropicai</div>
+    </div>
+  </div>
+  <nav class="nav-toc">
+    <a href="#what">Что это</a>
+    <a href="#how">Как работает</a>
+    <a href="#example">Пример</a>
+    <a href="#verify">Как проверить</a>
+    <a href="#pitfalls">Где споткнёшься</a>
+    <a href="#layers">Слои достоверности</a>
+    <a href="#unconfirmed">Расхождения с документацией</a>
+    <a href="#related">Рядом</a>
+    <a href="#sources">Источники</a>
+  </nav>
+  <h2 id="what">Что это</h2>
+  <p>Claude Code можно вынести из открытого терминала и поставить на повторяющееся обслуживание кода: искать механические дефекты, проверять их и открывать PR. Боль здесь в задачах, которые никто не хочет брать руками, но которые копятся каждый день. Раньше для повторения приходилось держать /loop в живой сессии, запускать локальные задания на своей машине или самому собирать cron и обвязку. Облачная рутина сохраняет запрос, репозитории и подключённые сервисы, а запускает работу по расписанию, HTTP-вызову или событию GitHub в инфраструктуре Anthropic, даже когда компьютер выключен.</p>
+  <h2 id="how">Как работает</h2>
+  <p>Ты один раз задаёшь запрос, репозитории, подключённые сервисы и способ запуска. Вариантов три: расписание, API-вызов и событие GitHub; их можно совмещать у одной рутины. Каждый запуск создаёт отдельную облачную сессию Claude Code. Код берётся из свежего клона выбранного репозитория, поэтому локальные файлы и незакоммиченные изменения в такую работу не попадают. По умолчанию Claude может отправлять изменения только в ветки с префиксом claude/, если отдельно не разрешить отправку в другие ветки. Подключённые сервисы дают ему доступ к внешним системам, причём во время облачного запуска подтверждений перед действиями нет. От /loop это отличается тем, что /loop живёт внутри текущей сессии и на твоей машине, а облачная рутина переживает закрытый терминал и перезапуск компьютера. Для задач с локальными файлами ближе локальные задания Claude Code Desktop, а для облачных routines нужно учитывать лимиты запусков и расход обычного лимита Claude Code.</p>
+  <h2 id="example">Пример</h2>
+  <p>В открытой сессии Claude Code введи /schedule daily PR review at 9am. Claude проведёт тебя через настройку и сохранит облачную рутину с ежедневным расписанием. Затем введи /schedule list, чтобы увидеть её в списке.</p>
+  <h2 id="verify">Как проверить</h2>
+  <div class="card card-good"><p>После сохранения команда /schedule list должна показать созданную рутину. Когда она запустится, в списке сессий появится отдельная сессия запуска, где можно посмотреть действия Claude и подготовленные изменения.</p></div>
+  <h2 id="pitfalls">Где споткнёшься</h2>
+  <div class="card card-warn">
+    <ul class="plain">
+      <li>Облачный запуск получает свежий клон выбранного репозитория, а не твои локальные файлы и незакоммиченные изменения.</li>
+      <li>По умолчанию отправка изменений разрешена только в ветки с префиксом claude/; существующую рабочую ветку рутина не тронет без отдельного разрешения.</li>
+      <li>Время расписания берётся из твоего часового пояса, но запуск может сдвинуться на несколько минут из-за распределения нагрузки.</li>
+      <li>Подключённые сервисы добавляются по умолчанию, а облачная рутина может писать через них без запроса разрешения — лишние подключения нужно убрать вручную.</li>
+    </ul>
+  </div>
+  <h2 id="layers">Слои достоверности</h2>
+  <div class="layers">
+    <div class="card">
+      <div class="card-head"><span class="layer-num">01</span> <span class="who">Boris Cherny (@bcherny)</span> · в оригинале</div>
+      <p>Boris Cherny (@bcherny) — в профиле указано «Claude Code @anthropicai». В загруженном фрагменте он пишет, что несколько недель пробует передать Claude повседневное обслуживание приложений и видит первые признаки того, что это может сработать; также назван Slack-канал proj-claude-maintains-apps. Текст обрывается на фразе «In it, Claude», поэтому каталог задач, правила проверки, число PR и результат в процентах в оригинале не прочитаны и автору поста приписывать их нельзя.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">02</span> <span class="who">@CarolinaCherry</span> · дописано на сайте</div>
+      <p>Автор сайта @CarolinaCherry развернул этот обрывок в подробную схему из одиннадцати задач обслуживания: от поиска падений и мёртвого кода до упрощения логики и исправления нестабильных тестов. Он добавил двухэтапную проверку мёртвого кода, таблицы истинности и формальное моделирование логики, идею настраивать саму рутину вместо каждого PR, а также статистику по открытым и влитым PR. Сайт также ссылается на страницу routines на домене claude.ai; этот домен я не проверял.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">03</span> <span class="who">code.claude.com</span> · документация</div>
+      <p>Официальная документация подтверждает сам механизм облачных routines: сохранённый запрос, репозитории, подключённые сервисы, запуск по расписанию, API или GitHub-событию, отдельные сессии и работу без включённого компьютера. Она также описывает /schedule, свежий клон репозитория, ограничения веток, отсутствие подтверждений во время запуска и расход лимитов. Не удалось подтвердить по официальной документации, что Boris Cherny использует именно одиннадцать перечисленных задач, Slack-схему из поста, двухдневный probe, таблицы истинности, показатель 46% или самонастройку routines.</p>
+    </div>
+    <div class="card card-good">
+      <div class="card-head"><span class="layer-num">04</span> вывод наблюдателя</div>
+      <p>Мой вывод — попробовать можно, но одной узкой рутиной. Для сольного бэкенд-разработчика это имеет смысл на повторяющейся проверке PR, тестов или документации, где результат легко просмотреть до слияния. Вся история про одиннадцать уборщиков и 46% выглядит интересно, но пока это пересказ сайта, а не подтверждённая характеристика продукта.</p>
+    </div>
+  </div>
+  <h2 id="unconfirmed">Расхождения с документацией</h2>
+  <div class="card card-warn">
+    <div class="card-head">сайт обещает то, чего документация не подтверждает</div>
+    <ul class="plain">
+      <li>Что у Boris Cherny работают именно одиннадцать названных routines: crash fuzzer, ant-only shipper, logic simplifier, logic bugfixer, dup unifier, dead-code removal, useless-test pruner, shipped-feature inliner, flaky-test fixer, abstraction improver и abstraction police.</li>
+      <li>Что эти задачи запускаются отдельно для iOS, Android, Desktop, web, CLI и Agent SDK, а результаты складываются в Slack-канал proj-claude-maintains-apps.</li>
+      <li>Что для мёртвого кода используется двухдневная схема: сначала добавить logging, подождать день, затем удалить то, что не сработало, и что эту схему Claude придумал сам.</li>
+      <li>Что каждый PR обязан запускать /verify и содержать repro, truth table и формальную модель логики, а проверки идут на реальных приложениях без mocks.</li>
+      <li>Что за несколько недель 388 открытых PR дали 180 merged, то есть 46%, и что перед человеческой проверкой каждый PR проходит отдельный Claude Code Review.</li>
+      <li>Что Claude сам настраивает routine по ошибкам предыдущего запуска, а Tag умеет создавать такие routines.</li>
+    </ul>
+  </div>
+  <h2 id="related">Рядом</h2>
+  <div class="chips">
+    <span>Part 10: New Feature Launches</span>
+    <span>Part 19: Getting Started With Loops</span>
+    <span>Part 21: Automation Is the Meta-Skill</span>
+    <span>Desktop scheduled tasks</span>
+  </div>
+  <h2 id="sources">Источники</h2>
+  <div class="sources">
+    <a href="https://x.com/bcherny/status/2088014489438621990?s=51"><span class="host">x.com</span><span class="what">пост @bcherny</span></a>
+    <a href="https://claude.com/blog/introducing-routines-in-claude-code"><span class="host">claude.com</span><span class="what">claude: introducing routines in claude code</span></a>
+    <a href="https://code.claude.com/docs/en/routines"><span class="host">code.claude.com</span><span class="what">code: routines</span></a>
+    <a href="https://code.claude.com/docs/en/web-scheduled-tasks"><span class="host">code.claude.com</span><span class="what">code: web scheduled tasks</span></a>
+    <a href="https://code.claude.com/docs/en/scheduled-tasks"><span class="host">code.claude.com</span><span class="what">code: scheduled tasks</span></a>
+    <a href="https://code.claude.com/docs/en/routines?utm_source=openai"><span class="host">code.claude.com</span><span class="what">code: routines</span></a>
+    <a href="https://claude.com/blog/introducing-routines-in-claude-code?utm_source=openai"><span class="host">claude.com</span><span class="what">claude: introducing routines in claude code</span></a>
+    <a href="https://code.claude.com/docs/en/web-scheduled-tasks?utm_source=openai"><span class="host">code.claude.com</span><span class="what">code: web scheduled tasks</span></a>
+  </div>
+  <footer>
+    <span><a href="index.html">все разборы</a></span>
+    <span>14.08.2026, 18:38 UTC</span>
+    <span>1 поиска · 28460 вход · 10705 выход · $0.0285</span>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.parentElement.querySelector('pre').textContent);
+      const was = btn.textContent;
+      btn.textContent = 'скопировано'; btn.classList.add('done');
+      setTimeout(() => { btn.textContent = was; btn.classList.remove('done'); }, 1400);
+    });
+  });
+</script>
+</body>
+</html>
