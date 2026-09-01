@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Команда для сокращения повторных запросов разрешений">
+<meta property="og:description" content="Стоит ли: смотря по чему · Windows: неизвестно · расхождений с документацией: 2. Part 11, новый совет.">
+<meta property="og:site_name" content="Наблюдатель за howborisusesclaudecode.com">
+<meta name="theme-color" content="#f8fafc">
+<title>Команда для сокращения повторных запросов разрешений — разбор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Вёрстка страницы разбора.
+ *
+ * Файл отдельно от Python намеренно: вид страницы меняется правкой этого
+ * файла, без единой строки кода. Содержимое взято с одобренных страниц
+ * (2026-07-30-postcompact.html и 2026-07-30-domain-knowledge.html) — они и
+ * есть эталон, а не «примерно такой стиль».
+ *
+ * CSS встраивается в страницу, а не подключается ссылкой: страница живёт в
+ * чужом репозитории на GitHub Pages, и внешний файл добавил бы второй
+ * запрос, кеш и целый класс поломок вида «стили не доехали». Страница
+ * обязана открываться одна.
+ *
+ * Блок «дописано» в конце — секции, которых в ручных страницах не было:
+ * ловушки, «рядом», аномалии.
+ */
+
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f8fafc; color: #334155; line-height: 1.65;
+  padding: 48px 24px; margin: 0; font-size: 15px;
+}
+.container { max-width: 800px; margin: 0 auto; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.eyebrow .badge {
+  background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;
+  border-radius: 4px; padding: 2px 7px; letter-spacing: .04em;
+}
+h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px; line-height: 1.2; }
+.subtitle { font-size: 16px; color: #64748b; margin: 0; }
+
+.stats-row {
+  display: flex; gap: 32px; flex-wrap: wrap; margin: 28px 0 32px; padding: 18px 0;
+  border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+}
+.stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+/* Тон стоит там, где решение. Красный — только «у тебя не заработает» и
+ * «сайт расходится с документацией»; «не стоит» гасится, потому что это
+ * не поломка, а сэкономленное время. */
+.stat-value.good { color: #166534; }
+.stat-value.warn { color: #92400e; }
+.stat-value.bad { color: #9b2226; }
+.stat-value.muted { color: #94a3b8; }
+.stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+.at-a-glance {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;
+}
+.glance-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: #78350f; margin-bottom: 14px;
+}
+.glance-row { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+.glance-row:last-child { margin-bottom: 0; }
+.glance-key {
+  font-size: 12px; font-weight: 600; color: #92400e; min-width: 108px;
+  flex: none; text-transform: uppercase; letter-spacing: .04em;
+}
+.glance-val { color: #422006; font-size: 14px; }
+.glance-val b { color: #78350f; }
+
+.who-wrote {
+  display: flex; align-items: flex-start; gap: 12px; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 32px;
+}
+.who-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  background: #1e40af; color: #fff; display: flex; align-items: center;
+  justify-content: center; font-weight: 600; font-size: 15px;
+}
+.who-name { font-weight: 600; color: #0f172a; }
+.who-handle { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; }
+.who-bio { font-size: 13px; color: #475569; margin-top: 2px; }
+
+.nav-toc {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; padding: 14px 16px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+}
+.nav-toc a {
+  font-size: 12px; color: #475569; text-decoration: none; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px; transition: all .15s ease;
+}
+.nav-toc a:hover { background: #e2e8f0; color: #0f172a; }
+
+h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin: 48px 0 16px; scroll-margin-top: 24px; }
+p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+.card-good { background: #f0fdf4; border-color: #86efac; }
+.card-warn { background: #fffbeb; border-color: #fcd34d; }
+.card-head {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;
+}
+.card-good .card-head { color: #166534; }
+.card-warn .card-head { color: #92400e; }
+.card-head .who { font-family: 'JetBrains Mono', monospace; text-transform: none; letter-spacing: 0; }
+.card p { font-size: 14px; margin: 0; }
+.layers { display: grid; gap: 10px; }
+.layer-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; color: #64748b;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace; font-size: .88em; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 5px; color: #1e40af;
+}
+.code-block { position: relative; margin: 14px 0; }
+.code-block pre {
+  background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px;
+  margin: 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; line-height: 1.55; color: #1e40af;
+}
+.code-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+.copy-btn {
+  background: #e2e8f0; border: none; border-radius: 4px; padding: 5px 10px;
+  font-size: 11px; cursor: pointer; color: #475569; font-family: inherit; transition: background .15s ease;
+}
+.copy-btn:hover { background: #cbd5e1; }
+.copy-btn.done { background: #bbf7d0; color: #166534; }
+
+.sources { display: grid; gap: 8px; }
+.sources a {
+  display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 8px; padding: 10px 14px; text-decoration: none; color: #334155;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.sources a:hover { border-color: #94a3b8; transform: translateX(2px); }
+.sources .host { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; min-width: 140px; flex: none; }
+.sources .what { font-size: 14px; }
+
+footer {
+  margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+  font-size: 12px; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 6px 20px;
+}
+/* Единственная ссылка в футере ведёт в архив: со страницы разбора должно
+ * быть куда пойти дальше, иначе она тупик. */
+footer a { color: #64748b; text-decoration: none; border-bottom: 1px solid #cbd5e1; }
+footer a:hover { color: #0f172a; border-bottom-color: #94a3b8; }
+
+/* --- дописано: секции, которых в ручных страницах не было --- */
+
+/* Ловушки и расхождения — списком, а не абзацем: это перечисление, и
+ * читатель пробегает его глазами, а не читает подряд. */
+ul.plain { margin: 0; padding-left: 20px; }
+ul.plain li { font-size: 14px; margin-bottom: 8px; }
+ul.plain li:last-child { margin-bottom: 0; }
+
+/* «Рядом» — плитками. Строкой через запятую это не читается: в названиях
+ * частей сайта есть и тире, и дефисы, и граница между пунктами пропадает. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips span {
+  font-size: 12px; color: #475569; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px;
+}
+
+/* Аномалии — единственная секция над оглавлением и без сворачивания.
+ * Это найденные в чужом тексте обращения к агенту: читатель обязан видеть
+ * их сразу, а не после прокрутки. */
+.card-alert { background: #fef2f2; border-color: #fca5a5; }
+.card-alert .card-head { color: #9b2226; }
+.card-alert blockquote {
+  margin: 0 0 10px; padding-left: 12px; border-left: 3px solid #fca5a5;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #7f1d1d;
+}
+.card-alert blockquote:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  body { padding: 28px 16px; }
+  h1 { font-size: 26px; }
+  .stats-row { gap: 20px; }
+  .glance-row { flex-direction: column; gap: 2px; }
+  .glance-key { min-width: 0; }
+  .sources .host { min-width: 100%; }
+  .sources a { flex-wrap: wrap; gap: 2px; }
+}
+
+/* --- индексная страница архива --- */
+
+.report-list { display: grid; gap: 10px; }
+.report-list a {
+  display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 14px 16px; text-decoration: none; color: #334155;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.report-list a:hover { border-color: #94a3b8; transform: translateX(2px); }
+.report-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #64748b; margin-bottom: 4px;
+}
+.report-title { font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+.report-summary { font-size: 13px; color: #475569; }
+
+/* --- страница расхождений --- */
+
+/* Карточка здесь не ссылка целиком, как в архиве: внутри список
+ * утверждений, и оборачивать список в <a> нельзя. Ссылкой остаётся
+ * заголовок — до самого разбора одно нажатие. */
+.divergence {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;
+  border-left: 3px solid #fca5a5;
+}
+.divergence .report-title a { color: #0f172a; text-decoration: none; }
+.divergence .report-title a:hover { border-bottom: 1px solid #94a3b8; }
+.divergence ul.plain { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="eyebrow">
+    <span class="badge">новый совет</span>
+    <span>Part 11 · Mastering Opus 4.7</span>
+  </div>
+  <h1>Команда для сокращения повторных запросов разрешений</h1>
+  <p class="subtitle">Вот это можно забрать, но только если у тебя реально повторяются одни и те же запросы на Bash или MCP.</p>
+  <div class="stats-row">
+    <div><div class="stat-value warn">смотря по чему</div><div class="stat-label">стоит ли тебе</div></div>
+    <div><div class="stat-value warn">неизвестно</div><div class="stat-label">на Windows</div></div>
+    <div><div class="stat-value warn">4</div><div class="stat-label">ловушек</div></div>
+    <div><div class="stat-value bad">2</div><div class="stat-label">расхождения с докой</div></div>
+  </div>
+  <div class="at-a-glance">
+    <div class="glance-title">Коротко</div>
+    <div class="glance-row">
+      <span class="glance-key">Стоит ли</span>
+      <span class="glance-val">Возвращайся к ней, если Claude Code в одном и том же проекте регулярно спрашивает про повторяющиеся Bash- или MCP-действия. Для нативного PowerShell на Windows подтверждения нет, а проектный allowlist лучше не принимать вслепую — особенно когда работаешь один и сам отвечаешь за последствия.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Windows</span>
+      <span class="glance-val">Саму <code>/fewer-permission-prompts</code> вводят внутри Claude Code, так что для её запуска не нужны ни PowerShell-синтаксис, ни путь в стиле macOS. Но документация обещает анализ Bash и MCP, а не PowerShell. Не удалось подтвердить по официальной документации, попадут ли в рекомендации вызовы из нативных PowerShell-сессий на Windows; для такого сценария полезность команды неясна.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Что сделать</span>
+      <span class="glance-val"><b>В проекте с повторяющимися Bash- или MCP-запросами запусти <code>/fewer-permission-prompts</code>, затем открой <code>/permissions</code> и проверь каждое добавленное allow-правило.</b></span>
+    </div>
+  </div>
+  <div class="who-wrote">
+    <div class="who-avatar">B</div>
+    <div>
+      <div><span class="who-name">Boris Cherny</span> <span class="who-handle">@bcherny</span></div>
+      <div class="who-bio">Claude Code @anthropicai</div>
+    </div>
+  </div>
+  <nav class="nav-toc">
+    <a href="#what">Что это</a>
+    <a href="#how">Как работает</a>
+    <a href="#example">Пример</a>
+    <a href="#verify">Как проверить</a>
+    <a href="#pitfalls">Где споткнёшься</a>
+    <a href="#layers">Слои достоверности</a>
+    <a href="#unconfirmed">Расхождения с документацией</a>
+    <a href="#related">Рядом</a>
+    <a href="#sources">Источники</a>
+  </nav>
+  <h2 id="what">Что это</h2>
+  <p>Claude Code теперь может пройтись по сохранённым транскриптам и найти часто повторяющиеся read-only вызовы Bash и MCP, на которых ты раньше постоянно подтверждал доступ. Штука появилась против усталости от одинаковых permission prompts в длинной работе. Раньше оставалось либо вручную жать постоянное разрешение на каждом подходящем запросе, либо самому писать allow-правила. Навык собирает приоритетный allowlist и добавляет его в проектный <code>.claude/settings.json</code>, то есть настройка живёт рядом с кодом, а не только в текущей сессии.</p>
+  <h2 id="how">Как работает</h2>
+  <p>Ты вызываешь slash-команду внутри Claude Code, а она смотрит не на файлы проекта, а на историю транскриптов. В область поиска входят частые read-only вызовы Bash и MCP; документация не обещает анализ любых остальных инструментов. По найденным вызовам она формирует приоритетный allowlist для проектного <code>.claude/settings.json</code>. Дальше Claude Code сверяет правила в порядке <code>deny</code>, затем <code>ask</code>, затем <code>allow</code>: более сильное <code>deny</code> или <code>ask</code> всё равно оставит блокировку либо вопрос. Это отличается от auto mode: auto mode каждый вызов прогоняет через классификатор безопасности, а здесь сохраняются конкретные постоянные правила. Это также не равно ручному «не спрашивать снова»: такие ручные Bash-разрешения обычно попадают в личный <code>.claude/settings.local.json</code>, а этот навык работает с проектным файлом.</p>
+  <h2 id="example">Пример</h2>
+  <p>В сессии Claude Code, запущенной из нужного проекта, введи <code>/fewer-permission-prompts</code>. Затем введи <code>/permissions</code>: этот экран показывает действующие правила и файл, из которого каждое взялось. Документированный результат — приоритетные allow-правила в проектном <code>.claude/settings.json</code>; конкретный список зависит от истории сессий.</p>
+  <h2 id="verify">Как проверить</h2>
+  <div class="card card-good"><p>После запуска открой <code>/permissions</code> и проверь, появились ли allow-правила с источником <code>.claude/settings.json</code>. Отдельной строки успешного завершения именно для этого навыка документация не задаёт.</p></div>
+  <h2 id="pitfalls">Где споткнёшься</h2>
+  <div class="card card-warn">
+    <ul class="plain">
+      <li><code>deny</code> и <code>ask</code> имеют приоритет над <code>allow</code>: добавленное правило не уберёт запрос, если его перекрывает другое правило.</li>
+      <li>Один <code>*</code> в Bash-правиле захватывает и пробелы, поэтому вручную расширенное правило вроде префикса команды может разрешить больше, чем кажется.</li>
+      <li>Для составной команды каждую часть разделённую <code>&amp;&amp;</code>, <code>;</code> или пайпом Claude Code проверяет отдельно; разрешение первой части не пропустит всю цепочку.</li>
+      <li>Файл <code>.claude/settings.json</code> проектный и может попасть в git, поэтому сгенерированный allowlist станет настройкой проекта, а не личной мелочью.</li>
+    </ul>
+  </div>
+  <h2 id="layers">Слои достоверности</h2>
+  <div class="layers">
+    <div class="card">
+      <div class="card-head"><span class="layer-num">01</span> <span class="who">Boris Cherny (@bcherny)</span> · в оригинале</div>
+      <p>Борис Черни — @bcherny; в описании его профиля указано Claude Code @anthropicai. В загруженном фрагменте он пишет, что выпустили <code>/fewer-permission-prompts</code>: навык ищет в истории сессий распространённые безопасные Bash- и MCP-вызовы, которые много раз вызывали запрос разрешения. Фрагмент обрывается на словах о списке команд, поэтому продолжение его формулировки недоступно.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">02</span> дописано на сайте</div>
+      <p>Кто ведёт сайт, в контексте не указан. Автор сайта добавил, что совет особенно полезен тем, кто не пользуется auto mode; в загруженном фрагменте поста Бориса этого сравнения нет. Он также связал совет с соседними частями про auto mode и recaps.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">03</span> <span class="who">code.claude.com</span> · документация</div>
+      <p>Официальная документация подтверждает саму команду: она сканирует транскрипты на распространённые read-only Bash- и MCP-вызовы и добавляет приоритетный allowlist в проектный <code>.claude/settings.json</code>. Документация отдельно подтверждает синтаксис allow-правил, их приоритет ниже <code>deny</code> и <code>ask</code>, а также то, что постоянные ручные Bash-разрешения сохраняются в <code>.claude/settings.local.json</code>.</p>
+    </div>
+    <div class="card card-good">
+      <div class="card-head"><span class="layer-num">04</span> вывод наблюдателя</div>
+      <p>Вот это можно забрать, но только если у тебя реально повторяются одни и те же запросы на Bash или MCP. Это не способ выключить защиту, а способ один раз разобрать накопившийся шум. Сгенерированные правила всё равно стоит глянуть глазами: широкое разрешение экономит клики, но легко открывает лишнее.</p>
+    </div>
+  </div>
+  <h2 id="unconfirmed">Расхождения с документацией</h2>
+  <div class="card card-warn">
+    <div class="card-head">сайт обещает то, чего документация не подтверждает</div>
+    <ul class="plain">
+      <li>Фраза автора сайта, что навык особенно полезен без auto mode: документация описывает auto mode отдельно, но не сравнивает его пользу с <code>/fewer-permission-prompts</code>.</li>
+      <li>Поддержка PowerShell-вызовов в истории Windows-сессий: официальная страница команды называет только Bash и MCP.</li>
+    </ul>
+  </div>
+  <h2 id="related">Рядом</h2>
+  <div class="chips">
+    <span><code>/permissions</code></span>
+    <span>Permission rules</span>
+    <span>Auto mode</span>
+    <span>Part 11 — Auto Mode + Parallel Claudes</span>
+  </div>
+  <h2 id="sources">Источники</h2>
+  <div class="sources">
+    <a href="https://x.com/bcherny/status/2044847851591856461"><span class="host">x.com</span><span class="what">пост @bcherny</span></a>
+    <a href="https://code.claude.com/docs/en/commands"><span class="host">code.claude.com</span><span class="what">code: commands</span></a>
+    <a href="https://code.claude.com/docs/en/permissions"><span class="host">code.claude.com</span><span class="what">code: permissions</span></a>
+    <a href="https://code.claude.com/docs/en/settings"><span class="host">code.claude.com</span><span class="what">code: settings</span></a>
+    <a href="https://code.claude.com/docs/en/permission-modes"><span class="host">code.claude.com</span><span class="what">code: permission modes</span></a>
+  </div>
+  <footer>
+    <span><a href="index.html">все разборы</a></span>
+    <span>31.07.2026, 16:33 UTC</span>
+    <span>4 поиска · 52282 вход · 6649 выход · $0.2244</span>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.parentElement.querySelector('pre').textContent);
+      const was = btn.textContent;
+      btn.textContent = 'скопировано'; btn.classList.add('done');
+      setTimeout(() => { btn.textContent = was; btn.classList.remove('done'); }, 1400);
+    });
+  });
+</script>
+</body>
+</html>
