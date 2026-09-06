@@ -210,6 +210,30 @@ ul.plain li:last-child { margin-bottom: 0; }
 .report-title { font-weight: 600; color: #0f172a; margin-bottom: 4px; }
 .report-summary { font-size: 13px; color: #475569; }
 
+/* Метрики архива: распределения вердиктов и Windows-статусов полосками.
+ * Цвет полосы — тон решения, тот же, что у .stat-value; полоса никогда не
+ * остаётся единственным носителем: рядом всегда подпись и число. */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.chart-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; }
+.chart-title {
+  font-size: 11px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: #64748b; margin-bottom: 10px;
+}
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-label { width: 96px; flex: none; font-size: 12px; color: #475569; }
+.bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 3px; }
+.bar-fill.good { background: #16a34a; }
+.bar-fill.warn { background: #d97706; }
+.bar-fill.bad { background: #9b2226; }
+.bar-fill.muted { background: #94a3b8; }
+.bar-value {
+  width: 24px; flex: none; font-size: 12px; font-weight: 500;
+  color: #64748b; text-align: right; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } }
+
 /* --- страница расхождений --- */
 
 /* Карточка здесь не ссылка целиком, как в архиве: внутри список
@@ -231,6 +255,25 @@ ul.plain li:last-child { margin-bottom: 0; }
   <h1>Разборы howborisusesclaudecode.com</h1>
   <p class="subtitle">Что появилось на сайте, что это значит и стоит ли оно времени.</p>
 
+  <div class="stats-row">
+    <div><div class="stat-value">5</div><div class="stat-label">разборов</div></div>
+    <div><div class="stat-value">0</div><div class="stat-label">стоит времени</div></div>
+    <div><div class="stat-value good">2</div><div class="stat-label">работает на Windows</div></div>
+    <div><div class="stat-value bad">6</div><div class="stat-label">расхождений с докой</div></div>
+  </div>
+  <div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-title">стоит ли времени</div>
+    <div class="bar-row"><span class="bar-label">смотря по чему</span><span class="bar-track"><span class="bar-fill warn" style="width:100%"></span></span><span class="bar-value">3</span></div>
+    <div class="bar-row"><span class="bar-label">нет</span><span class="bar-track"><span class="bar-fill muted" style="width:67%"></span></span><span class="bar-value">2</span></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">на Windows</div>
+    <div class="bar-row"><span class="bar-label">работает</span><span class="bar-track"><span class="bar-fill good" style="width:100%"></span></span><span class="bar-value">2</span></div>
+    <div class="bar-row"><span class="bar-label">с оговоркой</span><span class="bar-track"><span class="bar-fill warn" style="width:100%"></span></span><span class="bar-value">2</span></div>
+    <div class="bar-row"><span class="bar-label">неизвестно</span><span class="bar-track"><span class="bar-fill warn" style="width:50%"></span></span><span class="bar-value">1</span></div>
+  </div>
+  </div>
   <div class="nav-toc"><a href="divergences.html">сайт против документации · 6 расхождений</a></div>
   <div class="report-list">
     <a href="part16-e2ce4773-808077db68de0fab.html">
@@ -266,6 +309,6 @@ ul.plain li:last-child { margin-bottom: 0; }
   </footer>
 
 </div>
-<script type="application/json" id="reports">[{"name": "part16-e2ce4773-808077db68de0fab.html", "title": "Навык в отдельном контексте: в совете перепутан ключ", "summary": "Стоит ли: смотря по чему · Windows: с оговоркой · расхождений с документацией: 4", "date": "2026-07-31", "part": 16, "kind": "новый совет", "unconfirmed": ["Что ключ `fork: true` в frontmatter `SKILL.md` запускает навык в отдельном контексте: официальная документация описывает для этого `context: fork`.", "Что после запуска навыка в отдельном контексте его нужно дробить на агентов для изоляции каждого шага: такой точный рецепт не найден в официальной документации.", "Что добавление этой настройки к встроенному `/code-review` улучшает производительность: официальная документация такого эффекта не обещает.", "Что описанная схема — именно предварительный эксперимент, а не задокументированная возможность: найденные docs документируют `context: fork`, но не подтверждают статус этой конкретной формулировки с сайта."]}, {"name": "part11-767f2740-2544d0b4dc04aa6d.html", "title": "Команда для сокращения повторных запросов разрешений", "summary": "Стоит ли: смотря по чему · Windows: неизвестно · расхождений с документацией: 2", "date": "2026-07-31", "part": 11, "kind": "новый совет", "unconfirmed": ["Фраза автора сайта, что навык особенно полезен без auto mode: документация описывает auto mode отдельно, но не сравнивает его пользу с `/fewer-permission-prompts`.", "Поддержка PowerShell-вызовов в истории Windows-сессий: официальная страница команды называет только Bash и MCP."]}, {"name": "2026-07-30-part22-be1681fe.html", "title": "Связка Opus 5, защиты от инъекций и Auto Mode", "summary": "Стоит ли: нет · Windows: работает · расхождений с документацией: 3", "date": "2026-07-30", "part": 22, "kind": "новый совет"}, {"name": "2026-07-30-domain-knowledge.html", "title": "Знания о проекте в CLAUDE.md, skills и правилах ревью", "summary": "Стоит ли: смотря по обстоятельствам · Windows: работает · Найдено 4 расхождения сайта с первоисточником и документацией", "date": "2026-07-30", "part": 21, "kind": "совет 3"}, {"name": "2026-07-30-postcompact.html", "title": "PostCompact: хук после сжатия контекста", "summary": "Стоит ли: нет · Windows: с оговоркой · Найдено 2 расхождения сайта с документацией", "date": "2026-07-30", "part": 7, "kind": "новый совет"}]</script>
+<script type="application/json" id="reports">[{"name": "part16-e2ce4773-808077db68de0fab.html", "title": "Навык в отдельном контексте: в совете перепутан ключ", "summary": "Стоит ли: смотря по чему · Windows: с оговоркой · расхождений с документацией: 4", "date": "2026-07-31", "part": 16, "kind": "новый совет", "unconfirmed": ["Что ключ `fork: true` в frontmatter `SKILL.md` запускает навык в отдельном контексте: официальная документация описывает для этого `context: fork`.", "Что после запуска навыка в отдельном контексте его нужно дробить на агентов для изоляции каждого шага: такой точный рецепт не найден в официальной документации.", "Что добавление этой настройки к встроенному `/code-review` улучшает производительность: официальная документация такого эффекта не обещает.", "Что описанная схема — именно предварительный эксперимент, а не задокументированная возможность: найденные docs документируют `context: fork`, но не подтверждают статус этой конкретной формулировки с сайта."], "verdict": "maybe", "windows": "needs_adaptation"}, {"name": "part11-767f2740-2544d0b4dc04aa6d.html", "title": "Команда для сокращения повторных запросов разрешений", "summary": "Стоит ли: смотря по чему · Windows: неизвестно · расхождений с документацией: 2", "date": "2026-07-31", "part": 11, "kind": "новый совет", "unconfirmed": ["Фраза автора сайта, что навык особенно полезен без auto mode: документация описывает auto mode отдельно, но не сравнивает его пользу с `/fewer-permission-prompts`.", "Поддержка PowerShell-вызовов в истории Windows-сессий: официальная страница команды называет только Bash и MCP."], "verdict": "maybe", "windows": "unconfirmed"}, {"name": "2026-07-30-part22-be1681fe.html", "title": "Связка Opus 5, защиты от инъекций и Auto Mode", "summary": "Стоит ли: нет · Windows: работает · расхождений с документацией: 3", "date": "2026-07-30", "part": 22, "kind": "новый совет", "verdict": "no", "windows": "works"}, {"name": "2026-07-30-domain-knowledge.html", "title": "Знания о проекте в CLAUDE.md, skills и правилах ревью", "summary": "Стоит ли: смотря по обстоятельствам · Windows: работает · Найдено 4 расхождения сайта с первоисточником и документацией", "date": "2026-07-30", "part": 21, "kind": "совет 3", "verdict": "maybe", "windows": "works"}, {"name": "2026-07-30-postcompact.html", "title": "PostCompact: хук после сжатия контекста", "summary": "Стоит ли: нет · Windows: с оговоркой · Найдено 2 расхождения сайта с документацией", "date": "2026-07-30", "part": 7, "kind": "новый совет", "verdict": "no", "windows": "needs_adaptation"}]</script>
 </body>
 </html>
