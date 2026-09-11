@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta property="og:title" content="Где сайт расходится с документацией">
-<meta property="og:description" content="12 расхождений с официальной документацией в 3 разбора.">
+<meta property="og:description" content="15 расхождений с официальной документацией в 4 разбора.">
 <meta name="theme-color" content="#f8fafc">
 <title>Где сайт расходится с документацией</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -257,6 +257,15 @@ ul.plain li:last-child { margin-bottom: 0; }
 
   <div class="report-list">
     <div class="divergence">
+      <div class="report-meta">2026-09-11 · Part 24 · новая часть</div>
+      <div class="report-title"><a href="part24--c3179679c216d92d.html">Панель /diff и починка терминального интерфейса</a></div>
+      <ul class="plain">
+        <li>Что терминальный `/diff` раньше был одноразовым списком, а теперь стал постоянной панелью с таким конкретным прежним поведением: в загруженном посте подтверждена только новая панель, а в официальной документации это не описано.</li>
+        <li>Что `/focus` отключает встроенные diff-записи в разговоре: официальная документация описывает `/focus` как отдельный режим краткого просмотра сессии, а не как выключатель diff. ([code.claude.com](https://code.claude.com/docs/en/commands?utm_source=openai))</li>
+        <li>Что Claude многократно переписывал Ink и поддерживает его как чёрный ящик с тестами на свойства и бенчмарками: это есть в посте @bcherny, но подтвердить по официальной документации не удалось.</li>
+      </ul>
+    </div>
+    <div class="divergence">
       <div class="report-meta">2026-08-14 · Part 23 · новая часть</div>
       <div class="report-title"><a href="part23--d4f3b2ef6f005cdb.html">Claude Code берёт на себя обслуживание приложений</a></div>
       <ul class="plain">
@@ -290,7 +299,7 @@ ul.plain li:last-child { margin-bottom: 0; }
 
   <footer>
     <span><a href="index.html">все разборы</a></span>
-    <span>12 расхождений с официальной документацией в 3 разбора.</span>
+    <span>15 расхождений с официальной документацией в 4 разбора.</span>
   </footer>
 
 </div>
