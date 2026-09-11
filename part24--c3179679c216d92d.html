@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Панель /diff и починка терминального интерфейса">
+<meta property="og:description" content="Стоит ли: смотря по чему · Windows: неизвестно · расхождений с документацией: 3. Part 24, новая часть.">
+<meta property="og:site_name" content="Наблюдатель за howborisusesclaudecode.com">
+<meta name="theme-color" content="#f8fafc">
+<title>Панель /diff и починка терминального интерфейса — разбор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Вёрстка страницы разбора.
+ *
+ * Файл отдельно от Python намеренно: вид страницы меняется правкой этого
+ * файла, без единой строки кода. Содержимое взято с одобренных страниц
+ * (2026-07-30-postcompact.html и 2026-07-30-domain-knowledge.html) — они и
+ * есть эталон, а не «примерно такой стиль».
+ *
+ * CSS встраивается в страницу, а не подключается ссылкой: страница живёт в
+ * чужом репозитории на GitHub Pages, и внешний файл добавил бы второй
+ * запрос, кеш и целый класс поломок вида «стили не доехали». Страница
+ * обязана открываться одна.
+ *
+ * Блок «дописано» в конце — секции, которых в ручных страницах не было:
+ * ловушки, «рядом», аномалии.
+ */
+
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f8fafc; color: #334155; line-height: 1.65;
+  padding: 48px 24px; margin: 0; font-size: 15px;
+}
+.container { max-width: 800px; margin: 0 auto; }
+
+.eyebrow {
+  font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.eyebrow .badge {
+  background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe;
+  border-radius: 4px; padding: 2px 7px; letter-spacing: .04em;
+}
+h1 { font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px; line-height: 1.2; }
+.subtitle { font-size: 16px; color: #64748b; margin: 0; }
+
+.stats-row {
+  display: flex; gap: 32px; flex-wrap: wrap; margin: 28px 0 32px; padding: 18px 0;
+  border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+}
+.stat-value { font-size: 22px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+/* Тон стоит там, где решение. Красный — только «у тебя не заработает» и
+ * «сайт расходится с документацией»; «не стоит» гасится, потому что это
+ * не поломка, а сэкономленное время. */
+.stat-value.good { color: #166534; }
+.stat-value.warn { color: #92400e; }
+.stat-value.bad { color: #9b2226; }
+.stat-value.muted { color: #94a3b8; }
+.stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+
+.at-a-glance {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b; border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;
+}
+.glance-title {
+  font-size: 12px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: #78350f; margin-bottom: 14px;
+}
+.glance-row { display: flex; gap: 10px; align-items: baseline; margin-bottom: 10px; }
+.glance-row:last-child { margin-bottom: 0; }
+.glance-key {
+  font-size: 12px; font-weight: 600; color: #92400e; min-width: 108px;
+  flex: none; text-transform: uppercase; letter-spacing: .04em;
+}
+.glance-val { color: #422006; font-size: 14px; }
+.glance-val b { color: #78350f; }
+
+.who-wrote {
+  display: flex; align-items: flex-start; gap: 12px; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 32px;
+}
+.who-avatar {
+  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  background: #1e40af; color: #fff; display: flex; align-items: center;
+  justify-content: center; font-weight: 600; font-size: 15px;
+}
+.who-name { font-weight: 600; color: #0f172a; }
+.who-handle { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #64748b; }
+.who-bio { font-size: 13px; color: #475569; margin-top: 2px; }
+
+.nav-toc {
+  display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; padding: 14px 16px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+}
+.nav-toc a {
+  font-size: 12px; color: #475569; text-decoration: none; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px; transition: all .15s ease;
+}
+.nav-toc a:hover { background: #e2e8f0; color: #0f172a; }
+
+h2 { font-size: 20px; font-weight: 600; color: #0f172a; margin: 48px 0 16px; scroll-margin-top: 24px; }
+p { margin: 0 0 14px; } p:last-child { margin-bottom: 0; }
+
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 18px; margin-bottom: 12px; }
+.card-good { background: #f0fdf4; border-color: #86efac; }
+.card-warn { background: #fffbeb; border-color: #fcd34d; }
+.card-head {
+  display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600;
+  letter-spacing: .04em; text-transform: uppercase; color: #64748b; margin-bottom: 8px; flex-wrap: wrap;
+}
+.card-good .card-head { color: #166534; }
+.card-warn .card-head { color: #92400e; }
+.card-head .who { font-family: 'JetBrains Mono', monospace; text-transform: none; letter-spacing: 0; }
+.card p { font-size: 14px; margin: 0; }
+.layers { display: grid; gap: 10px; }
+.layer-num {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; color: #64748b;
+}
+
+code {
+  font-family: 'JetBrains Mono', monospace; font-size: .88em; background: #f1f5f9;
+  border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 5px; color: #1e40af;
+}
+.code-block { position: relative; margin: 14px 0; }
+.code-block pre {
+  background: #fff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 14px 16px;
+  margin: 0; overflow-x: auto; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; line-height: 1.55; color: #1e40af;
+}
+.code-block .copy-btn { position: absolute; top: 8px; right: 8px; }
+.copy-btn {
+  background: #e2e8f0; border: none; border-radius: 4px; padding: 5px 10px;
+  font-size: 11px; cursor: pointer; color: #475569; font-family: inherit; transition: background .15s ease;
+}
+.copy-btn:hover { background: #cbd5e1; }
+.copy-btn.done { background: #bbf7d0; color: #166534; }
+
+.sources { display: grid; gap: 8px; }
+.sources a {
+  display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e2e8f0;
+  border-radius: 8px; padding: 10px 14px; text-decoration: none; color: #334155;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.sources a:hover { border-color: #94a3b8; transform: translateX(2px); }
+.sources .host { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #64748b; min-width: 140px; flex: none; }
+.sources .what { font-size: 14px; }
+
+footer {
+  margin-top: 48px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+  font-size: 12px; color: #94a3b8; display: flex; flex-wrap: wrap; gap: 6px 20px;
+}
+/* Единственная ссылка в футере ведёт в архив: со страницы разбора должно
+ * быть куда пойти дальше, иначе она тупик. */
+footer a { color: #64748b; text-decoration: none; border-bottom: 1px solid #cbd5e1; }
+footer a:hover { color: #0f172a; border-bottom-color: #94a3b8; }
+
+/* --- дописано: секции, которых в ручных страницах не было --- */
+
+/* Ловушки и расхождения — списком, а не абзацем: это перечисление, и
+ * читатель пробегает его глазами, а не читает подряд. */
+ul.plain { margin: 0; padding-left: 20px; }
+ul.plain li { font-size: 14px; margin-bottom: 8px; }
+ul.plain li:last-child { margin-bottom: 0; }
+
+/* «Рядом» — плитками. Строкой через запятую это не читается: в названиях
+ * частей сайта есть и тире, и дефисы, и граница между пунктами пропадает. */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips span {
+  font-size: 12px; color: #475569; background: #fff;
+  border: 1px solid #e2e8f0; border-radius: 999px; padding: 4px 11px;
+}
+
+/* Аномалии — единственная секция над оглавлением и без сворачивания.
+ * Это найденные в чужом тексте обращения к агенту: читатель обязан видеть
+ * их сразу, а не после прокрутки. */
+.card-alert { background: #fef2f2; border-color: #fca5a5; }
+.card-alert .card-head { color: #9b2226; }
+.card-alert blockquote {
+  margin: 0 0 10px; padding-left: 12px; border-left: 3px solid #fca5a5;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #7f1d1d;
+}
+.card-alert blockquote:last-child { margin-bottom: 0; }
+
+@media (max-width: 640px) {
+  body { padding: 28px 16px; }
+  h1 { font-size: 26px; }
+  .stats-row { gap: 20px; }
+  .glance-row { flex-direction: column; gap: 2px; }
+  .glance-key { min-width: 0; }
+  .sources .host { min-width: 100%; }
+  .sources a { flex-wrap: wrap; gap: 2px; }
+}
+
+/* --- индексная страница архива --- */
+
+.report-list { display: grid; gap: 10px; }
+.report-list a {
+  display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+  padding: 14px 16px; text-decoration: none; color: #334155;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.report-list a:hover { border-color: #94a3b8; transform: translateX(2px); }
+.report-meta {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: #64748b; margin-bottom: 4px;
+}
+.report-title { font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+.report-summary { font-size: 13px; color: #475569; }
+
+/* Метрики архива: распределения вердиктов и Windows-статусов полосками.
+ * Цвет полосы — тон решения, тот же, что у .stat-value; полоса никогда не
+ * остаётся единственным носителем: рядом всегда подпись и число. */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.chart-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; }
+.chart-title {
+  font-size: 11px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: #64748b; margin-bottom: 10px;
+}
+.bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.bar-row:last-child { margin-bottom: 0; }
+.bar-label { width: 96px; flex: none; font-size: 12px; color: #475569; }
+.bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 3px; }
+.bar-fill.good { background: #16a34a; }
+.bar-fill.warn { background: #d97706; }
+.bar-fill.bad { background: #9b2226; }
+.bar-fill.muted { background: #94a3b8; }
+.bar-value {
+  width: 24px; flex: none; font-size: 12px; font-weight: 500;
+  color: #64748b; text-align: right; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) { .charts-row { grid-template-columns: 1fr; } }
+
+/* --- страница расхождений --- */
+
+/* Карточка здесь не ссылка целиком, как в архиве: внутри список
+ * утверждений, и оборачивать список в <a> нельзя. Ссылкой остаётся
+ * заголовок — до самого разбора одно нажатие. */
+.divergence {
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;
+  border-left: 3px solid #fca5a5;
+}
+.divergence .report-title a { color: #0f172a; text-decoration: none; }
+.divergence .report-title a:hover { border-bottom: 1px solid #94a3b8; }
+.divergence ul.plain { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="eyebrow">
+    <span class="badge">новая часть</span>
+    <span>Part 24 · The Diff Pane, and Who Maintains It</span>
+  </div>
+  <h1>Панель /diff и починка терминального интерфейса</h1>
+  <p class="subtitle">Полезная часть — сама привычка читать только рискованные изменения и отдельная панель, если она реально есть в твоей сборке.</p>
+  <div class="stats-row">
+    <div><div class="stat-value warn">смотря по чему</div><div class="stat-label">стоит ли тебе</div></div>
+    <div><div class="stat-value warn">неизвестно</div><div class="stat-label">на Windows</div></div>
+    <div><div class="stat-value warn">3</div><div class="stat-label">ловушек</div></div>
+    <div><div class="stat-value bad">3</div><div class="stat-label">расхождения с докой</div></div>
+  </div>
+  <div class="at-a-glance">
+    <div class="glance-title">Коротко</div>
+    <div class="glance-row">
+      <span class="glance-key">Стоит ли</span>
+      <span class="glance-val">Для одиночной backend-разработки просмотр изменений без переключения окон может сэкономить время, особенно на критичных правках в API, авторизации или миграциях. Правило читать не всё подряд, а рискованные изменения, тоже здравое. Вернуться к этому стоит, если <code>/diff</code> действительно запускается у тебя на Windows и обновляет панель во время работы Claude; до этой проверки совет остаётся экспериментом.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Windows</span>
+      <span class="glance-val">Claude Code официально поддерживает Windows, PowerShell, CMD и Git Bash; для TUI в документации и журнале изменений есть отдельные Windows-исправления. Но подтверждения именно постоянной панели <code>/diff</code> в терминальном Claude Code на Windows я не нашёл. Для WinGet обновление нужно делать через <code>winget upgrade Anthropic.ClaudeCode</code>, а <code>/tui fullscreen</code> не требует другой записи команды.</span>
+    </div>
+    <div class="glance-row">
+      <span class="glance-key">Что сделать</span>
+      <span class="glance-val"><b>Проверь <code>/diff</code> в Windows-сессии; при мерцании перейди на <code>/tui fullscreen</code>, а установку через WinGet обнови командой <code>winget upgrade Anthropic.ClaudeCode</code>.</b></span>
+    </div>
+  </div>
+  <nav class="nav-toc">
+    <a href="#what">Что это</a>
+    <a href="#how">Как работает</a>
+    <a href="#example">Пример</a>
+    <a href="#verify">Как проверить</a>
+    <a href="#pitfalls">Где споткнёшься</a>
+    <a href="#layers">Слои достоверности</a>
+    <a href="#unconfirmed">Расхождения с документацией</a>
+    <a href="#related">Рядом</a>
+    <a href="#sources">Источники</a>
+  </nav>
+  <h2 id="what">Что это</h2>
+  <p>Главное здесь — держать <code>/diff</code> открытым рядом с разговором и смотреть изменения по файлам на месте. До этого, по описанию автора поста, для просмотра кода приходилось переключаться в другое окно; теперь панель можно прокручивать, открывать файлы кликом и видеть обновления в реальном времени. Соседний совет задаёт практичный порог: читать diff стоит, когда затронут критичный код или код, который важно сделать правильно. Два последних совета уже про терминальный интерфейс: сначала обновить Claude Code, потом переключить TUI, если он дёргается. В финале сайт уводит тему дальше — к идее, что часть отрисовщика можно поддерживать тестами, не разбираясь в его внутренностях.</p>
+  <h2 id="how">Как работает</h2>
+  <p>Внутри сессии <code>/diff</code> открывает отдельную панель для просмотра текущих изменений. Она не ждёт окончания работы: новые правки должны появляться по мере того, как Claude записывает их в файлы, а список файлов можно прокручивать и выбирать кликом. Задача панели узкая — убрать прыжки между терминалом и редактором; она сама не решает, правильна ли правка и не заменяет тесты. Решение, какие изменения читать, остаётся за тобой: в посте названы только критичный код и код, который важно сделать правильно. <code>/focus</code> — соседняя, но другая команда: официальная документация описывает её как режим, где остаются последний запрос, краткая строка действий с diff-статистикой и финальный ответ; работает он только в полноэкранном отображении. Для мерцания и скачков документация предлагает <code>/tui fullscreen</code>: он переводит текущую сессию на отдельный полноэкранный отрисовщик, где прокрутка идёт внутри Claude Code. <code>claude update</code> обновляет CLI, но для установки через WinGet официальная инструкция отдельно указывает <code>winget upgrade Anthropic.ClaudeCode</code>.</p>
+  <h2 id="example">Пример</h2>
+  <p>В сессии Claude Code набери <code>/diff</code>, выбери файл и оставь панель открытой, пока Claude вносит правки: изменения должны появляться там же. Если TUI скачет или мерцает, выйди в оболочку, выполни <code>claude update</code>, снова запусти Claude Code и набери <code>/tui fullscreen</code>. Для установки через WinGet обновление делается командой <code>winget upgrade Anthropic.ClaudeCode</code>.</p>
+  <h2 id="verify">Как проверить</h2>
+  <div class="card card-good"><p>Для <code>/diff</code> признак успеха — панель не закрывается после просмотра, файл открывается выбором, а новая правка появляется без ручного переоткрытия окна. Для TUI после <code>/tui fullscreen</code> прокрутка должна работать внутри Claude Code, а скачки и мерцание исчезнуть; поддержку именно <code>/diff</code> на Windows нужно проверить в своей сессии отдельно.</p></div>
+  <h2 id="pitfalls">Где споткнёшься</h2>
+  <div class="card card-warn">
+    <ul class="plain">
+      <li>В полноэкранном TUI прокрутка живёт внутри Claude Code, а не в обычной истории терминала; используй мышь или PageUp.</li>
+      <li>Если Claude Code установлен через WinGet, для обновления документация указывает <code>winget upgrade Anthropic.ClaudeCode</code>, а не автоматическое обновление.</li>
+      <li><code>/focus</code> доступен только в полноэкранном режиме, поэтому в обычном TUI он не даст описанный режим просмотра.</li>
+    </ul>
+  </div>
+  <h2 id="layers">Слои достоверности</h2>
+  <div class="layers">
+    <div class="card">
+      <div class="card-head"><span class="layer-num">01</span> <span class="who">@bcherny</span> · в оригинале</div>
+      <p>В загруженных постах автор — @bcherny; имени и описания профиля в контексте нет, поэтому я не приписываю ему должность. Он сообщает, что <code>/diff</code> стал постоянной прокручиваемой панелью с кликабельными файлами и обновлением в реальном времени, а diff он читает, когда затронут критичный код или код, который важно сделать правильно; отдельно говорит, что сам код не пишет. Для дёргающегося TUI он даёт порядок <code>claude update</code>, затем <code>/tui</code>; ещё пишет, что Claude несколько раз переписывал Ink, а текущую реализацию держат как чёрный ящик с тестами на свойства и замерами производительности.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">02</span> <span class="who">@CarolinaCherry</span> · дописано на сайте</div>
+      <p>@CarolinaCherry добавил историю о том, каким <code>/diff</code> был раньше, связал его с <code>/focus</code> и с тем, что в Claude Desktop уже был просмотр изменений. Дальше сайт превращает ответ про критичные diff в правило: агент пишет, человек решает, что читать, а отрисовщик можно передать Claude, если тесты хорошо задают его поведение. Связи с Parts 21 и 23, объяснение тестов на свойства и вывод про передачу компонентов — интерпретация автора сайта, а не содержание загруженных постов.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="layer-num">03</span> <span class="who">code.claude.com</span> · документация</div>
+      <p>Официальная документация подтверждает <code>/focus</code> как режим фокуса с кратким видом сессии и отдельно описывает <code>/tui fullscreen</code> как способ убрать мерцание и скачки. Она также подтверждает <code>claude update</code>, поддержку Windows и отдельный путь обновления для WinGet. В найденной документации не удалось подтвердить терминальный <code>/diff</code> с постоянной панелью, а также утверждение про многократную перепись Ink и поддержку отрисовщика через тесты на свойства и бенчмарки.</p>
+    </div>
+    <div class="card card-good">
+      <div class="card-head"><span class="layer-num">04</span> вывод наблюдателя</div>
+      <p>Полезная часть — сама привычка читать только рискованные изменения и отдельная панель, если она реально есть в твоей сборке. Но сайт смешал её с неверно описанным <code>/focus</code>, а поддержку <code>/diff</code> на Windows официальная документация не подтверждает. Я бы проверил это один раз в своей Windows-сессии и не строил вокруг него рабочий процесс, пока панель не покажет стабильное поведение.</p>
+    </div>
+  </div>
+  <h2 id="unconfirmed">Расхождения с документацией</h2>
+  <div class="card card-warn">
+    <div class="card-head">сайт обещает то, чего документация не подтверждает</div>
+    <ul class="plain">
+      <li>Что терминальный <code>/diff</code> раньше был одноразовым списком, а теперь стал постоянной панелью с таким конкретным прежним поведением: в загруженном посте подтверждена только новая панель, а в официальной документации это не описано.</li>
+      <li>Что <code>/focus</code> отключает встроенные diff-записи в разговоре: официальная документация описывает <code>/focus</code> как отдельный режим краткого просмотра сессии, а не как выключатель diff.</li>
+      <li>Что Claude многократно переписывал Ink и поддерживает его как чёрный ящик с тестами на свойства и бенчмарками: это есть в посте @bcherny, но подтвердить по официальной документации не удалось.</li>
+    </ul>
+  </div>
+  <h2 id="related">Рядом</h2>
+  <div class="chips">
+    <span>/focus</span>
+    <span>/tui</span>
+    <span>Part 21: Автоматизация как метанавык</span>
+    <span>Part 23: Claude поддерживает приложения</span>
+  </div>
+  <h2 id="sources">Источники</h2>
+  <div class="sources">
+    <a href="https://x.com/bcherny/status/2098165206296011059"><span class="host">x.com</span><span class="what">пост @bcherny</span></a>
+    <a href="https://x.com/bcherny/status/2098210496109572123"><span class="host">x.com</span><span class="what">пост @bcherny</span></a>
+    <a href="https://x.com/bcherny/status/2098222529777480034"><span class="host">x.com</span><span class="what">пост @bcherny</span></a>
+    <a href="https://x.com/bcherny/status/2098210282464247871"><span class="host">x.com</span><span class="what">пост @bcherny</span></a>
+    <a href="https://code.claude.com/docs/en/commands"><span class="host">code.claude.com</span><span class="what">code: commands</span></a>
+    <a href="https://code.claude.com/docs/en/terminal-config"><span class="host">code.claude.com</span><span class="what">code: terminal config</span></a>
+    <a href="https://code.claude.com/docs/en/fullscreen"><span class="host">code.claude.com</span><span class="what">code: fullscreen</span></a>
+    <a href="https://code.claude.com/docs/en/setup"><span class="host">code.claude.com</span><span class="what">code: setup</span></a>
+    <a href="https://code.claude.com/docs/en/cli-usage"><span class="host">code.claude.com</span><span class="what">code: cli usage</span></a>
+    <a href="https://code.claude.com/docs/en/installation"><span class="host">code.claude.com</span><span class="what">code: installation</span></a>
+    <a href="https://code.claude.com/docs/en/changelog"><span class="host">code.claude.com</span><span class="what">code: changelog</span></a>
+    <a href="https://code.claude.com/docs/en/changelog?utm_source=openai"><span class="host">code.claude.com</span><span class="what">code: changelog</span></a>
+    <a href="https://code.claude.com/docs/en/setup?s=15&amp;utm_source=openai"><span class="host">code.claude.com</span><span class="what">code: setup</span></a>
+    <a href="https://code.claude.com/docs/en/commands?utm_source=openai"><span class="host">code.claude.com</span><span class="what">code: commands</span></a>
+    <a href="https://code.claude.com/docs/en/terminal-config?utm_source=openai"><span class="host">code.claude.com</span><span class="what">code: terminal config</span></a>
+  </div>
+  <footer>
+    <span><a href="index.html">все разборы</a></span>
+    <span>11.09.2026, 15:19 UTC</span>
+    <span>4 поиска · 44501 вход · 10813 выход · $0.0619</span>
+  </footer>
+
+</div>
+
+<script>
+  document.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(btn.parentElement.querySelector('pre').textContent);
+      const was = btn.textContent;
+      btn.textContent = 'скопировано'; btn.classList.add('done');
+      setTimeout(() => { btn.textContent = was; btn.classList.remove('done'); }, 1400);
+    });
+  });
+</script>
+</body>
+</html>
